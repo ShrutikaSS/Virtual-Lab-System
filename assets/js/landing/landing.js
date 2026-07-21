@@ -175,7 +175,10 @@
     document.querySelectorAll('[data-action="login"]').forEach(el => {
       el.addEventListener('click', e => {
         e.preventDefault();
-        showToast('Securing connection — redirecting to Zeal SSO Portal…');
+        showToast('Securing connection — redirecting to clearance panel…');
+        setTimeout(() => {
+          window.location.href = el.getAttribute('href');
+        }, 800);
       });
     });
 
