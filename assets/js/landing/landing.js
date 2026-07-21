@@ -19,7 +19,7 @@
     if (prefersReduced) {
       paths.forEach(p => {
         p.style.strokeDashoffset = '0';
-        p.style.strokeDasharray  = 'none';
+        p.style.strokeDasharray = 'none';
       });
       return;
     }
@@ -28,7 +28,7 @@
     paths.forEach(p => {
       let len;
       try { len = p.getTotalLength(); } catch { len = 2000; }
-      p.style.strokeDasharray  = len;
+      p.style.strokeDasharray = len;
       p.style.strokeDashoffset = len;
       /* Force a reflow so the initial state is painted */
       void p.getBoundingClientRect();
@@ -84,13 +84,13 @@
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
         obs.unobserve(entry.target);
-        const el     = entry.target;
+        const el = entry.target;
         const target = parseInt(el.dataset.target, 10);
         const suffix = el.dataset.suffix || '';
         if (isNaN(target)) return;
         const duration = 1800;
         const start = performance.now();
-        const tick  = now => {
+        const tick = now => {
           const elapsed = now - start;
           const progress = Math.min(elapsed / duration, 1);
           /* Ease-out cubic */
@@ -184,7 +184,7 @@
       link.addEventListener('click', e => {
         e.preventDefault();
         const card = link.closest('.exp-card');
-        const tag  = card?.querySelector('.exp-tag')?.textContent || '';
+        const tag = card?.querySelector('.exp-tag')?.textContent || '';
         const name = card?.querySelector('h3')?.textContent || '';
         showToast(`Initializing simulation [${tag}]: "${name}"`);
       });
