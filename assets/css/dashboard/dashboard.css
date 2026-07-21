@@ -1,0 +1,1361 @@
+/* ============================================================
+   ZealVirtual Science Lab — Student Dashboard Stylesheet
+   Architecture: assets/css/dashboard/dashboard.css
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400;1,8..60,500&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  /* Core palette matching portal design system */
+  --blueprint: #152A50;
+  --blueprint-deep: #0D1D3B;
+  --grid-line: rgba(226, 236, 255, 0.09);
+  --paper: #F5F2E9;
+  --paper-dim: #EAE6D8;
+  --ink: #152A50;
+  --ink-soft: #48597E;
+  --white: #FBFAF5;
+
+  /* Subject accents */
+  --chem: #37B7A0;      /* Teal — Chemistry */
+  --physics: #9C8CF0;   /* Violet — Physics */
+  --electrical: #F0B33E;/* Amber — Electrical/BEEE */
+
+  /* Status feedback */
+  --good: #37B7A0;
+  --bad: #D9634C;
+
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Source Serif 4', serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* Radii & Motion */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 0.18s;
+  --t-med: 0.3s;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--font-display);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Global focus ring — amber accent for accessibility */
+*:focus-visible {
+  outline: 2.5px solid var(--electrical) !important;
+  outline-offset: 3px !important;
+  border-radius: var(--r-sm) !important;
+}
+
+/* ============================================================
+   APP SHELL LAYOUT
+   ============================================================ */
+.app-container {
+  display: grid;
+  grid-template-columns: 236px 1fr;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   SIDEBAR (236px, --blueprint)
+   ============================================================ */
+.sidebar {
+  background: var(--blueprint);
+  color: var(--white);
+  border-right: 1px solid rgba(226, 236, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* Blueprint grid line overlay */
+.sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.8;
+  pointer-events: none;
+  mask-image: radial-gradient(circle at 50% 20%, black, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at 50% 20%, black, transparent 80%);
+}
+
+.sidebar-header {
+  padding: 24px 20px;
+  position: relative;
+  z-index: 1;
+  border-bottom: 1px solid rgba(226, 236, 255, 0.08);
+}
+
+.logo-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logo-ring {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  color: var(--white);
+}
+
+.logo-ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.logo-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.logo-sub {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--electrical);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+/* Navigation Links */
+.sidebar-nav {
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(251, 250, 245, 0.75);
+  border-radius: var(--r-sm);
+  border-left: 3px solid transparent;
+  transition: all var(--t-fast) var(--ease-out);
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--white);
+}
+
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform var(--t-fast) var(--ease-out);
+}
+
+.nav-item:hover .nav-dot {
+  transform: scale(1.25);
+}
+
+/* Nav Item Accents */
+.nav-item[data-view="dashboard"] .nav-dot { background: var(--white); }
+.nav-item[data-view="chem"] .nav-dot { background: var(--chem); }
+.nav-item[data-view="phy"] .nav-dot { background: var(--physics); }
+.nav-item[data-view="elec"] .nav-dot { background: var(--electrical); }
+.nav-item[data-view="profile"] .nav-dot { background: var(--ink-soft); }
+
+/* Active States */
+.nav-item.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+}
+
+.nav-item[data-view="dashboard"].active { border-left-color: var(--white); }
+.nav-item[data-view="chem"].active { border-left-color: var(--chem); }
+.nav-item[data-view="phy"].active { border-left-color: var(--physics); }
+.nav-item[data-view="elec"].active { border-left-color: var(--electrical); }
+.nav-item[data-view="profile"].active { border-left-color: var(--electrical); }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(226, 236, 255, 0.08);
+  position: relative;
+  z-index: 1;
+  font-size: 0.72rem;
+  color: rgba(251, 250, 245, 0.45);
+}
+
+/* ============================================================
+   MAIN CONTENT AREA
+   ============================================================ */
+.main-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--paper);
+}
+
+/* Top Bar */
+.top-bar {
+  background: var(--paper-dim);
+  border-bottom: 1px solid rgba(21, 42, 80, 0.1);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.breadcrumb-crumb {
+  color: var(--ink-soft);
+}
+
+.breadcrumb-crumb.active {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.15);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.profile-chip:hover {
+  border-color: var(--ink-soft);
+  box-shadow: 0 2px 8px rgba(21, 42, 80, 0.08);
+}
+
+.avatar-initials {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--blueprint);
+  color: var(--electrical);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-chip-name {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Content Container */
+.content-area {
+  padding: 36px 32px 60px;
+  flex: 1;
+  max-width: 1240px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+/* ============================================================
+   VIEWS CONTAINER & ANIMATIONS
+   ============================================================ */
+.view {
+  display: none;
+  animation: fadeIn 0.25s var(--ease-out);
+}
+
+.view.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   DASHBOARD HOME VIEW
+   ============================================================ */
+.welcome-header {
+  margin-bottom: 28px;
+}
+
+.welcome-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.welcome-subtitle {
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+}
+
+/* Stats Row */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.stat-card {
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.12);
+  border-radius: var(--r-md);
+  padding: 20px 22px;
+  box-shadow: 0 2px 6px rgba(21, 42, 80, 0.04);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+/* Section Titles */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Subject Cards (3 Large Columns) */
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.subject-card {
+  background: var(--blueprint);
+  color: var(--white);
+  border-radius: var(--r-md);
+  padding: 28px 24px;
+  border-top: 4px solid var(--white);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 14px rgba(21, 42, 80, 0.12);
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--t-fast) var(--ease-out), box-shadow var(--t-fast);
+}
+
+.subject-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(21, 42, 80, 0.2);
+}
+
+.subject-card[data-subject="chem"] { border-top-color: var(--chem); }
+.subject-card[data-subject="phy"] { border-top-color: var(--physics); }
+.subject-card[data-subject="elec"] { border-top-color: var(--electrical); }
+
+.subject-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  background: rgba(13, 29, 59, 0.6);
+  border: 1px solid rgba(251, 250, 245, 0.12);
+}
+
+.subject-card[data-subject="chem"] .subject-icon { color: var(--chem); }
+.subject-card[data-subject="phy"] .subject-icon { color: var(--physics); }
+.subject-card[data-subject="elec"] .subject-icon { color: var(--electrical); }
+
+.subject-name {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.subject-desc {
+  font-size: 0.92rem;
+  color: rgba(251, 250, 245, 0.72);
+  line-height: 1.55;
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.subject-progress-row {
+  margin-bottom: 20px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: rgba(251, 250, 245, 0.6);
+  margin-bottom: 6px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: rgba(251, 250, 245, 0.12);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s var(--ease-out);
+}
+
+.subject-card[data-subject="chem"] .progress-bar-fill { background: var(--chem); }
+.subject-card[data-subject="phy"] .progress-bar-fill { background: var(--physics); }
+.subject-card[data-subject="elec"] .progress-bar-fill { background: var(--electrical); }
+
+.btn-open-subject {
+  width: 100%;
+  padding: 11px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  border: 1px solid rgba(251, 250, 245, 0.18);
+  transition: all var(--t-fast);
+  text-align: center;
+}
+
+.subject-card:hover .btn-open-subject {
+  background: var(--white);
+  color: var(--blueprint);
+}
+
+/* Continue Experiments List */
+.continue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.continue-card {
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.12);
+  border-radius: var(--r-md);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.continue-card:hover {
+  border-color: rgba(21, 42, 80, 0.25);
+  box-shadow: 0 3px 12px rgba(21, 42, 80, 0.06);
+}
+
+.continue-info {
+  flex: 1;
+}
+
+.continue-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.tag-pill {
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: 600;
+  background: var(--paper-dim);
+  color: var(--ink);
+}
+
+.tag-pill[data-subject="chem"] { background: rgba(55, 183, 160, 0.15); color: var(--chem); }
+.tag-pill[data-subject="phy"] { background: rgba(156, 140, 240, 0.15); color: var(--physics); }
+.tag-pill[data-subject="elec"] { background: rgba(240, 179, 62, 0.18); color: #B27C12; }
+
+.continue-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.btn-resume {
+  padding: 9px 18px;
+  border-radius: var(--r-sm);
+  background: var(--blueprint);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: transform var(--t-fast), background var(--t-fast);
+  white-space: nowrap;
+}
+
+.btn-resume:hover {
+  background: var(--blueprint-deep);
+  transform: translateX(2px);
+}
+
+/* ============================================================
+   SUBJECT EXP GRID VIEW
+   ============================================================ */
+.subject-header-banner {
+  background: var(--blueprint);
+  color: var(--white);
+  border-radius: var(--r-lg);
+  padding: 32px 36px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.subject-header-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.7;
+}
+
+.subject-banner-content {
+  position: relative;
+  z-index: 1;
+}
+
+.subject-banner-tag {
+  font-size: 0.75rem;
+  color: var(--electrical);
+  margin-bottom: 6px;
+}
+
+.subject-banner-title {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.subject-banner-desc {
+  color: rgba(251, 250, 245, 0.8);
+  font-size: 1.05rem;
+  max-width: 650px;
+}
+
+.exp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.exp-card {
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.12);
+  border-radius: var(--r-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.exp-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(21, 42, 80, 0.25);
+  box-shadow: 0 6px 18px rgba(21, 42, 80, 0.08);
+}
+
+.exp-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.exp-card-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.exp-card-desc {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-bottom: 20px;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.status-pill {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pill.not-started { background: var(--paper-dim); color: var(--ink-soft); }
+.status-pill.in-progress { background: rgba(240, 179, 62, 0.18); color: #B27C12; }
+.status-pill.completed { background: rgba(55, 183, 160, 0.18); color: var(--chem); }
+
+.btn-start-exp {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--r-sm);
+  background: var(--paper-dim);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--t-fast);
+}
+
+.exp-card:hover .btn-start-exp {
+  background: var(--blueprint);
+  color: var(--white);
+}
+
+/* ============================================================
+   EXPERIMENT DETAIL WORKBENCH
+   ============================================================ */
+.exp-header {
+  margin-bottom: 24px;
+}
+
+.exp-nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+
+.exp-nav-back:hover {
+  color: var(--ink);
+}
+
+.exp-headline {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Workbench Tab Bar */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid rgba(21, 42, 80, 0.12);
+  margin-bottom: 28px;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all var(--t-fast);
+}
+
+.tab-btn:hover {
+  color: var(--ink);
+}
+
+.tab-btn.active {
+  color: var(--ink);
+  border-bottom-color: var(--electrical);
+  font-weight: 700;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.2s var(--ease-out);
+}
+
+/* Theory Tab */
+.theory-wrap {
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.12);
+  border-radius: var(--r-md);
+  padding: 32px;
+}
+
+.theory-intro {
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+
+.section-subhead {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 24px 0 12px;
+}
+
+.objectives-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin-bottom: 28px;
+  color: var(--ink-soft);
+}
+
+.objectives-list li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.key-relation-box {
+  background: var(--paper-dim);
+  border: 1.5px solid rgba(21, 42, 80, 0.15);
+  border-left: 4px solid var(--electrical);
+  border-radius: var(--r-sm);
+  padding: 20px 24px;
+  margin-top: 24px;
+}
+
+.key-relation-title {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+
+.key-relation-formula {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Apparatus Tab */
+.apparatus-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.apparatus-card {
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.12);
+  border-radius: var(--r-md);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.apparatus-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  background: var(--paper-dim);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.apparatus-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+
+.apparatus-qty {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+/* ============================================================
+   SIMULATION ENGINE & CONTROLS
+   ============================================================ */
+.sim-workbench {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.sim-controls-panel {
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.12);
+  border-radius: var(--r-md);
+  padding: 24px;
+}
+
+.sim-control-group {
+  margin-bottom: 20px;
+}
+
+.sim-label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.sim-label {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.sim-value {
+  color: var(--electrical);
+  font-weight: 700;
+}
+
+.sim-slider {
+  width: 100%;
+  accent-color: var(--blueprint);
+  cursor: pointer;
+}
+
+.sim-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--paper-dim);
+  border: 1px solid rgba(21, 42, 80, 0.15);
+  border-radius: var(--r-sm);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+
+/* Live Simulation Visualizer */
+.sim-visualizer {
+  background: var(--blueprint-deep);
+  color: var(--white);
+  border-radius: var(--r-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  min-height: 320px;
+  border: 1px solid rgba(226, 236, 255, 0.1);
+}
+
+.sim-canvas-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.readout-panel {
+  background: rgba(21, 42, 80, 0.7);
+  border: 1px solid rgba(226, 236, 255, 0.12);
+  border-radius: var(--r-sm);
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.readout-item {
+  text-align: center;
+}
+
+.readout-label {
+  font-size: 0.65rem;
+  color: rgba(251, 250, 245, 0.55);
+  margin-bottom: 4px;
+}
+
+.readout-val {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--electrical);
+}
+
+.btn-record-reading {
+  width: 100%;
+  padding: 13px;
+  margin-top: 16px;
+  border-radius: var(--r-sm);
+  background: var(--chem);
+  color: var(--blueprint-deep);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: all var(--t-fast);
+}
+
+.btn-record-reading:hover {
+  box-shadow: 0 4px 14px rgba(55, 183, 160, 0.35);
+  filter: brightness(1.06);
+}
+
+/* Trial Logs Table */
+.table-wrap {
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.12);
+  border-radius: var(--r-md);
+  padding: 24px;
+  overflow-x: auto;
+}
+
+.trials-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.trials-table th {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  padding: 10px 14px;
+  border-bottom: 2px solid var(--paper-dim);
+  text-transform: uppercase;
+}
+
+.trials-table td {
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--paper-dim);
+  color: var(--ink);
+}
+
+/* ============================================================
+   QUIZ ENGINE
+   ============================================================ */
+.quiz-container {
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.12);
+  border-radius: var(--r-md);
+  padding: 32px;
+}
+
+.quiz-question-block {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--paper-dim);
+}
+
+.question-text {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.options-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1.5px solid rgba(21, 42, 80, 0.15);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all var(--t-fast);
+}
+
+.option-label:hover {
+  border-color: var(--ink-soft);
+  background: var(--white);
+}
+
+.option-label input {
+  accent-color: var(--blueprint);
+}
+
+.option-label.correct {
+  border-color: var(--good) !important;
+  background: rgba(55, 183, 160, 0.12) !important;
+  color: var(--ink) !important;
+  font-weight: 600;
+}
+
+.option-label.incorrect {
+  border-color: var(--bad) !important;
+  background: rgba(217, 99, 76, 0.12) !important;
+  color: var(--bad) !important;
+}
+
+.quiz-score-banner {
+  background: var(--blueprint);
+  color: var(--white);
+  border-radius: var(--r-md);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.score-text-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.score-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.score-subtitle {
+  font-size: 0.88rem;
+  color: rgba(251, 250, 245, 0.7);
+}
+
+.btn-submit-quiz {
+  padding: 13px 28px;
+  background: var(--electrical);
+  color: var(--blueprint-deep);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--r-sm);
+  transition: all var(--t-fast);
+}
+
+.btn-submit-quiz:hover {
+  box-shadow: 0 4px 14px rgba(240, 179, 62, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   MY PROFILE VIEW
+   ============================================================ */
+.profile-banner {
+  background: var(--blueprint);
+  color: var(--white);
+  border-radius: var(--r-lg);
+  padding: 36px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-avatar-large {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--blueprint-deep);
+  border: 3px solid var(--electrical);
+  color: var(--electrical);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-main-name {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.profile-roll-tag {
+  font-size: 0.78rem;
+  color: var(--electrical);
+  margin-bottom: 6px;
+}
+
+.profile-program-text {
+  font-size: 0.95rem;
+  color: rgba(251, 250, 245, 0.75);
+}
+
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.info-card {
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.12);
+  border-radius: var(--r-md);
+  padding: 24px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--paper-dim);
+  font-size: 0.9rem;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-key {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.info-val {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Badges Chips */
+.badges-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.badge-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--white);
+  border: 1px solid rgba(21, 42, 80, 0.15);
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN OVERRIDES
+   ============================================================ */
+@media (max-width: 980px) {
+  .sim-workbench {
+    grid-template-columns: 1fr;
+  }
+  .exp-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .subject-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .app-container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid rgba(226, 236, 255, 0.1);
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .nav-item {
+    white-space: nowrap;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    padding: 8px 14px;
+  }
+
+  .nav-item.active {
+    border-left: none;
+  }
+
+  .nav-item[data-view="dashboard"].active { border-bottom-color: var(--white); }
+  .nav-item[data-view="chem"].active { border-bottom-color: var(--chem); }
+  .nav-item[data-view="phy"].active { border-bottom-color: var(--physics); }
+  .nav-item[data-view="elec"].active { border-bottom-color: var(--electrical); }
+  .nav-item[data-view="profile"].active { border-bottom-color: var(--electrical); }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .top-bar {
+    padding: 14px 20px;
+  }
+
+  .content-area {
+    padding: 24px 20px 40px;
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .subject-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .apparatus-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-info-grid {
+    grid-template-columns: 1fr;
+  }
+}

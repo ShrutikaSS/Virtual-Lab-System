@@ -126,7 +126,7 @@
       <h2 class="form-title" id="formTitle">Sign in to your bench</h2>
       <p class="form-note" id="formNote">Use your institute email and roll number password to continue.</p>
 
-      <form onsubmit="event.preventDefault(); alert('This is a demo — connect it to your auth backend to go live.');">
+      <form onsubmit="handleAuthSubmit(event)">
         <div class="field">
           <label id="idLabel" for="idField">Email or roll number</label>
           <input id="idField" type="text" placeholder="e.g. 21ai045@institute.edu" required autocomplete="username">
