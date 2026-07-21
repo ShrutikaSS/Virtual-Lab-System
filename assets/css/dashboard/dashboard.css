@@ -1359,3 +1359,92 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   LOGOUT SECTION (Profile View)
+   ============================================================ */
+.logout-section {
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.logout-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--paper-dim);
+  margin-bottom: 4px;
+}
+
+.logout-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.logout-label {
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+
+.logout-desc {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.logout-desc strong {
+  color: var(--ink);
+}
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: transparent;
+  color: var(--bad);
+  border: 1.5px solid var(--bad);
+  border-radius: var(--r-md);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out),
+              color var(--t-fast) var(--ease-out),
+              transform var(--t-fast) var(--ease-out),
+              box-shadow var(--t-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.logout-btn:hover {
+  background: var(--bad);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(217, 99, 76, 0.35);
+  transform: translateY(-1px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.logout-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.logout-btn svg {
+  flex-shrink: 0;
+  transition: transform var(--t-fast) var(--ease-out);
+}
+
+.logout-btn:hover svg {
+  transform: translateX(2px);
+}
+

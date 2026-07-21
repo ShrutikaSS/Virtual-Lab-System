@@ -1544,11 +1544,40 @@
           </div>
         `).join('')}
       </div>
+
+      <div class="logout-section">
+        <div class="logout-divider"></div>
+        <div class="logout-info">
+          <p class="logout-label mono">Session</p>
+          <p class="logout-desc">You are currently signed in as <strong>${s.name}</strong>. Logging out will end your session.</p>
+        </div>
+        <button class="logout-btn" id="logoutBtn" onclick="confirmLogout()" aria-label="Log out of Virtual Lab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Log Out
+        </button>
+      </div>
     `;
+  }
+
+  /**
+   * Confirms and executes logout
+   */
+  function confirmLogout() {
+    const btn = document.getElementById('logoutBtn');
+    if (btn) {
+      btn.textContent = 'Signing out…';
+      btn.disabled = true;
+    }
+    window.location.href = '../ajax/auth/logout.php';
   }
 
   // Bind global functions & initialize app on DOM load
   window.selectExpTab = selectExpTab;
+  window.confirmLogout = confirmLogout;
   document.addEventListener('DOMContentLoaded', init);
 
 })();
