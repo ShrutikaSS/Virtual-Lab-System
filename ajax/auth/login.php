@@ -56,11 +56,13 @@ if (mysqli_num_rows($result) === 1) {
         exit();
 
     } else {
-        die("Invalid password.");
+        header("Location: ../../login.php?error=invalid_password");
+  exit();
     }
 
 } else {
-    die("Invalid username or role.");
+    header("Location: ../../login.php?error=invalid_credentials");
+exit();
 }
 
 ?>

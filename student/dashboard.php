@@ -1,10 +1,40 @@
+<?php
+
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit();
+}
+
+require_once "../include/dbConfig.php";
+
+$user_id = $_SESSION['user_id'];
+
+$sql = "SELECT * FROM users WHERE id = ?";
+
+$stmt = mysqli_prepare($conn, $sql);
+
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+
+mysqli_stmt_execute($stmt);
+
+$result = mysqli_stmt_get_result($stmt);
+
+$student = mysqli_fetch_assoc($result);
+
+if (!$student) {
+    die("Student not found.");
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="ZealVirtual Science Lab — Interactive Student Dashboard for Chemistry, Physics, and Electrical virtual lab experiments.">
-  <title>Vidyut Virtual Lab — Student Dashboard</title>
+  <title>Zeal Virtual Lab — Student Dashboard</title>
 
   <!-- Google Fonts matching landing & auth pages -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,7 +65,7 @@
           </svg>
         </div>
         <div class="logo-text">
-          <span class="logo-name">Vidyut Virtual Lab</span>
+          <span class="logo-name">Zeal Virtual Lab</span>
           <span class="logo-sub">Student Portal</span>
         </div>
       </a>
@@ -80,9 +110,9 @@
       </nav>
 
       <div class="profile-chip" id="profileChip" role="button" tabIndex="0" aria-label="Open student profile">
-        <div class="avatar-initials">AR</div>
-        <span class="profile-chip-name">Aarav Rao</span>
-      </div>
+    <div class="avatar-initials" id="headerInitials"></div>
+    <span class="profile-chip-name" id="headerName"></span>
+</div>
     </header>
 
     <!-- Dynamic View Containers -->
@@ -105,6 +135,10 @@
   </div>
 
 </div>
+
+<script>
+    window.loggedInStudent = <?php echo json_encode($student); ?>;
+</script>
 
 <!-- Client-side Dashboard Application Script -->
 <script src="../assets/js/dashboard/dashboard.js"></script>

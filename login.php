@@ -125,7 +125,19 @@
       <p class="form-eyebrow mono" id="formEyebrow">STUDENT ACCESS</p>
       <h2 class="form-title" id="formTitle">Sign in to your bench</h2>
       <p class="form-note" id="formNote">Use your institute email and roll number password to continue.</p>
+ <?php
+$error = $_GET['error'] ?? '';
+?>
 
+      <?php if ($error === 'invalid_password'): ?>
+      <p class="error-message">
+        Incorrect password. Please try again.
+    </p>
+     <?php elseif ($error === 'invalid_credentials'): ?>
+    <p class="error-message">
+        Invalid username or role.
+    </p>
+<?php endif; ?>
       <form action="ajax/auth/login.php" method="POST">
          <input type="hidden" name="role" id="roleField" value="student">
 

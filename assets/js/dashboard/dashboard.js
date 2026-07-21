@@ -1,3 +1,5 @@
+
+
 /* ============================================================
    ZealVirtual Science Lab — Student Dashboard Script
    Architecture: assets/js/dashboard/dashboard.js
@@ -9,23 +11,30 @@
   // Complete Sample Data Model for Student & Subjects
   const appData = {
     student: {
-      name: 'Aarav Rao',
-      firstName: 'Aarav',
-      initials: 'AR',
-      roll: '21AI045',
-      program: 'B.Tech Computer Science & Artificial Intelligence',
-      semester: 'Semester 4',
-      batch: '2021–2025',
-      email: 'aarav.rao@institute.edu',
-      phone: '+91 98765 43210',
-      mentor: 'Dr. S. K. Raman',
+      name: window.loggedInStudent.full_name,
+      firstName: window.loggedInStudent.full_name.split(' ')[0],
+      initials: window.loggedInStudent.full_name
+        .split(' ')
+        .map(name => name[0])
+        .join('')
+        .toUpperCase(),
+
+      roll: window.loggedInStudent.roll_no,
+      program: window.loggedInStudent.academic_program,
+      semester: window.loggedInStudent.semester,
+      batch: window.loggedInStudent.batch,
+      email: window.loggedInStudent.email,
+      phone: window.loggedInStudent.phone,
+      mentor: window.loggedInStudent.faculty_mentor,
+
       stats: {
-        completedCount: 12,
-        quizzesAttempted: 15,
-        avgScore: 88,
-        hoursLogged: 14.5
+        completedCount: 0,
+        quizzesAttempted: 0,
+        avgScore: 0,
+        hoursLogged: 0
       },
-      badges: ['Titration Master', 'Circuit Wizard', 'Precision Analyst', 'Top Scorer']
+
+      badges: []
     },
     subjects: {
       chem: {
@@ -499,6 +508,13 @@
       }
     }
   };
+  const headerInitials = document.getElementById('headerInitials');
+  const headerName = document.getElementById('headerName');
+
+  if (headerInitials && headerName) {
+    headerInitials.textContent = appData.student.initials;
+    headerName.textContent = appData.student.name;
+  }
 
   // State Engine
   const state = {
@@ -714,8 +730,8 @@
               <div class="subject-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   ${sub.id === 'chem' ? '<path d="M9 2v6l-5 8a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-8V2"/><path d="M7 2h10"/>' :
-                    sub.id === 'phy' ? '<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/>' :
-                    '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>'}
+        sub.id === 'phy' ? '<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/>' :
+          '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>'}
                 </svg>
               </div>
               <h3 class="subject-name">${sub.name}</h3>
