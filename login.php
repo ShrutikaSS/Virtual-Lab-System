@@ -128,6 +128,7 @@
 
       <form action="ajax/auth/login.php" method="POST">
          <input type="hidden" name="role" id="roleField" value="student">
+
         <div class="field">
           <label id="idLabel" for="idField">Email or roll number</label>
           <input 
