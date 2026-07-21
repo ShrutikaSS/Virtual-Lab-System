@@ -175,7 +175,19 @@
     document.querySelectorAll('[data-action="login"]').forEach(el => {
       el.addEventListener('click', e => {
         e.preventDefault();
-        showToast('Securing connection — redirecting to Zeal SSO Portal…');
+        const targetHref = el.getAttribute('href');
+        console.log('Login click - navigating to:', targetHref);
+        showToast('Securing connection — redirecting to clearance panel…');
+        setTimeout(() => {
+          // Primary navigation method
+          if (targetHref) {
+            window.location.assign(targetHref);
+          }
+          // Fallback in case assign fails (e.g., older browsers)
+          if (window.location.href !== targetHref) {
+            window.location.href = targetHref;
+          }
+        }, 800);
       });
     });
 

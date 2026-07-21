@@ -58,7 +58,7 @@
       <!-- Right-side nav -->
       <nav class="header-nav" id="main-nav" aria-label="Primary navigation">
         <a href="#help" class="help-link" id="nav-help-link">Help</a>
-        <a href="#" class="btn btn-primary" id="header-login-btn" data-action="login">Login</a>
+        <a href="login.php" class="btn btn-primary" id="header-login-btn" data-action="login">Login</a>
       </nav>
 
     </div>
@@ -89,7 +89,7 @@
           </p>
 
           <div class="hero-ctas">
-            <a href="#" class="btn btn-primary" id="hero-launch-btn" data-action="login">Launch Workspace</a>
+            <a href="login.php" class="btn btn-primary" id="hero-launch-btn" data-action="login">Launch Workspace</a>
             <a href="#experiments" class="btn btn-ghost" id="hero-view-btn">View Simulations</a>
           </div>
         </div>
@@ -534,7 +534,7 @@
         <a href="#about-section" id="footer-about-link">About</a>
         <a href="#experiments"   id="footer-exp-link">Simulations</a>
         <a href="#help"          id="footer-help-link">Help Desk</a>
-        <a href="#" class="btn btn-primary" id="footer-login-btn" data-action="login">Login</a>
+        <a href="login.php" class="btn btn-primary" id="footer-login-btn" data-action="login">Login</a>
       </nav>
     </div>
   </footer>
