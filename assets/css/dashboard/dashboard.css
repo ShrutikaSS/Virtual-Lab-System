@@ -20,9 +20,12 @@
   --white: #FBFAF5;
 
   /* Subject accents */
-  --chem: #37B7A0;      /* Teal — Chemistry */
-  --physics: #9C8CF0;   /* Violet — Physics */
-  --electrical: #F0B33E;/* Amber — Electrical/BEEE */
+  --chem: #37B7A0;
+  /* Teal — Chemistry */
+  --physics: #9C8CF0;
+  /* Violet — Physics */
+  --electrical: #F0B33E;
+  /* Amber — Electrical/BEEE */
 
   /* Status feedback */
   --good: #37B7A0;
@@ -225,11 +228,25 @@ button {
 }
 
 /* Nav Item Accents */
-.nav-item[data-view="dashboard"] .nav-dot { background: var(--white); }
-.nav-item[data-view="chem"] .nav-dot { background: var(--chem); }
-.nav-item[data-view="phy"] .nav-dot { background: var(--physics); }
-.nav-item[data-view="elec"] .nav-dot { background: var(--electrical); }
-.nav-item[data-view="profile"] .nav-dot { background: var(--ink-soft); }
+.nav-item[data-view="dashboard"] .nav-dot {
+  background: var(--white);
+}
+
+.nav-item[data-view="chem"] .nav-dot {
+  background: var(--chem);
+}
+
+.nav-item[data-view="phy"] .nav-dot {
+  background: var(--physics);
+}
+
+.nav-item[data-view="elec"] .nav-dot {
+  background: var(--electrical);
+}
+
+.nav-item[data-view="profile"] .nav-dot {
+  background: var(--ink-soft);
+}
 
 /* Active States */
 .nav-item.active {
@@ -237,11 +254,25 @@ button {
   color: var(--white);
 }
 
-.nav-item[data-view="dashboard"].active { border-left-color: var(--white); }
-.nav-item[data-view="chem"].active { border-left-color: var(--chem); }
-.nav-item[data-view="phy"].active { border-left-color: var(--physics); }
-.nav-item[data-view="elec"].active { border-left-color: var(--electrical); }
-.nav-item[data-view="profile"].active { border-left-color: var(--electrical); }
+.nav-item[data-view="dashboard"].active {
+  border-left-color: var(--white);
+}
+
+.nav-item[data-view="chem"].active {
+  border-left-color: var(--chem);
+}
+
+.nav-item[data-view="phy"].active {
+  border-left-color: var(--physics);
+}
+
+.nav-item[data-view="elec"].active {
+  border-left-color: var(--electrical);
+}
+
+.nav-item[data-view="profile"].active {
+  border-left-color: var(--electrical);
+}
 
 .sidebar-footer {
   padding: 16px 20px;
@@ -353,8 +384,15 @@ button {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ============================================================
@@ -448,9 +486,17 @@ button {
   box-shadow: 0 8px 24px rgba(21, 42, 80, 0.2);
 }
 
-.subject-card[data-subject="chem"] { border-top-color: var(--chem); }
-.subject-card[data-subject="phy"] { border-top-color: var(--physics); }
-.subject-card[data-subject="elec"] { border-top-color: var(--electrical); }
+.subject-card[data-subject="chem"] {
+  border-top-color: var(--chem);
+}
+
+.subject-card[data-subject="phy"] {
+  border-top-color: var(--physics);
+}
+
+.subject-card[data-subject="elec"] {
+  border-top-color: var(--electrical);
+}
 
 .subject-icon {
   width: 44px;
@@ -464,9 +510,17 @@ button {
   border: 1px solid rgba(251, 250, 245, 0.12);
 }
 
-.subject-card[data-subject="chem"] .subject-icon { color: var(--chem); }
-.subject-card[data-subject="phy"] .subject-icon { color: var(--physics); }
-.subject-card[data-subject="elec"] .subject-icon { color: var(--electrical); }
+.subject-card[data-subject="chem"] .subject-icon {
+  color: var(--chem);
+}
+
+.subject-card[data-subject="phy"] .subject-icon {
+  color: var(--physics);
+}
+
+.subject-card[data-subject="elec"] .subject-icon {
+  color: var(--electrical);
+}
 
 .subject-name {
   font-family: var(--font-display);
@@ -509,9 +563,17 @@ button {
   transition: width 0.4s var(--ease-out);
 }
 
-.subject-card[data-subject="chem"] .progress-bar-fill { background: var(--chem); }
-.subject-card[data-subject="phy"] .progress-bar-fill { background: var(--physics); }
-.subject-card[data-subject="elec"] .progress-bar-fill { background: var(--electrical); }
+.subject-card[data-subject="chem"] .progress-bar-fill {
+  background: var(--chem);
+}
+
+.subject-card[data-subject="phy"] .progress-bar-fill {
+  background: var(--physics);
+}
+
+.subject-card[data-subject="elec"] .progress-bar-fill {
+  background: var(--electrical);
+}
 
 .btn-open-subject {
   width: 100%;
@@ -578,9 +640,20 @@ button {
   color: var(--ink);
 }
 
-.tag-pill[data-subject="chem"] { background: rgba(55, 183, 160, 0.15); color: var(--chem); }
-.tag-pill[data-subject="phy"] { background: rgba(156, 140, 240, 0.15); color: var(--physics); }
-.tag-pill[data-subject="elec"] { background: rgba(240, 179, 62, 0.18); color: #B27C12; }
+.tag-pill[data-subject="chem"] {
+  background: rgba(55, 183, 160, 0.15);
+  color: var(--chem);
+}
+
+.tag-pill[data-subject="phy"] {
+  background: rgba(156, 140, 240, 0.15);
+  color: var(--physics);
+}
+
+.tag-pill[data-subject="elec"] {
+  background: rgba(240, 179, 62, 0.18);
+  color: #B27C12;
+}
 
 .continue-title {
   font-family: var(--font-display);
@@ -712,9 +785,20 @@ button {
   text-transform: uppercase;
 }
 
-.status-pill.not-started { background: var(--paper-dim); color: var(--ink-soft); }
-.status-pill.in-progress { background: rgba(240, 179, 62, 0.18); color: #B27C12; }
-.status-pill.completed { background: rgba(55, 183, 160, 0.18); color: var(--chem); }
+.status-pill.not-started {
+  background: var(--paper-dim);
+  color: var(--ink-soft);
+}
+
+.status-pill.in-progress {
+  background: rgba(240, 179, 62, 0.18);
+  color: #B27C12;
+}
+
+.status-pill.completed {
+  background: rgba(55, 183, 160, 0.18);
+  color: var(--chem);
+}
 
 .btn-start-exp {
   width: 100%;
@@ -1279,9 +1363,11 @@ button {
   .sim-workbench {
     grid-template-columns: 1fr;
   }
+
   .exp-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .subject-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1315,11 +1401,25 @@ button {
     border-left: none;
   }
 
-  .nav-item[data-view="dashboard"].active { border-bottom-color: var(--white); }
-  .nav-item[data-view="chem"].active { border-bottom-color: var(--chem); }
-  .nav-item[data-view="phy"].active { border-bottom-color: var(--physics); }
-  .nav-item[data-view="elec"].active { border-bottom-color: var(--electrical); }
-  .nav-item[data-view="profile"].active { border-bottom-color: var(--electrical); }
+  .nav-item[data-view="dashboard"].active {
+    border-bottom-color: var(--white);
+  }
+
+  .nav-item[data-view="chem"].active {
+    border-bottom-color: var(--chem);
+  }
+
+  .nav-item[data-view="phy"].active {
+    border-bottom-color: var(--physics);
+  }
+
+  .nav-item[data-view="elec"].active {
+    border-bottom-color: var(--electrical);
+  }
+
+  .nav-item[data-view="profile"].active {
+    border-bottom-color: var(--electrical);
+  }
 
   .sidebar-footer {
     display: none;
@@ -1359,92 +1459,3 @@ button {
     grid-template-columns: 1fr;
   }
 }
-
-/* ============================================================
-   LOGOUT SECTION (Profile View)
-   ============================================================ */
-.logout-section {
-  margin-top: 40px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.logout-divider {
-  width: 100%;
-  height: 1px;
-  background: var(--paper-dim);
-  margin-bottom: 4px;
-}
-
-.logout-info {
-  flex: 1;
-  min-width: 200px;
-}
-
-.logout-label {
-  font-size: 0.7rem;
-  color: var(--ink-soft);
-  margin-bottom: 4px;
-}
-
-.logout-desc {
-  font-size: 0.88rem;
-  color: var(--ink-soft);
-  line-height: 1.5;
-}
-
-.logout-desc strong {
-  color: var(--ink);
-}
-
-.logout-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 22px;
-  background: transparent;
-  color: var(--bad);
-  border: 1.5px solid var(--bad);
-  border-radius: var(--r-md);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background var(--t-fast) var(--ease-out),
-              color var(--t-fast) var(--ease-out),
-              transform var(--t-fast) var(--ease-out),
-              box-shadow var(--t-fast) var(--ease-out);
-  white-space: nowrap;
-}
-
-.logout-btn:hover {
-  background: var(--bad);
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(217, 99, 76, 0.35);
-  transform: translateY(-1px);
-}
-
-.logout-btn:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
-
-.logout-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.logout-btn svg {
-  flex-shrink: 0;
-  transition: transform var(--t-fast) var(--ease-out);
-}
-
-.logout-btn:hover svg {
-  transform: translateX(2px);
-}
-

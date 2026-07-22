@@ -115,16 +115,26 @@ if (!$faculty) {
 
       <div class="top-bar-right">
         <div class="profile-chip" id="profileChip" role="button" tabIndex="0" aria-label="Open faculty profile">
-          <div class="avatar-initials" id="headerInitials"></div>
-          <span class="profile-chip-name" id="headerName"></span>
+          <div class="avatar-initials">RS</div>
+          <span class="profile-chip-name">Dr. Rajesh Sharma</span>
         </div>
-        <button class="btn-logout-icon" id="logoutBtn" title="Log out from Faculty Console" aria-label="Log out">
+
+        <!-- Direct Logout Button -->
+        <button class="btn-logout-icon" title="Log out" aria-label="Log out" onclick="handleLogout()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
           </svg>
         </button>
+
       </div>
     </header>
+
+    <!-- Top Bar Breadcrumbs -->
+    <div class="top-bar">
+      <nav class="breadcrumb" id="breadcrumbContainer" aria-label="Breadcrumb navigation">
+        <span class="breadcrumb-crumb active">Dashboard</span>
+      </nav>
+    </div>
 
     <!-- Dynamic View Containers -->
     <main class="content-area">
@@ -152,6 +162,25 @@ if (!$faculty) {
 
     </main>
 
+    <!-- GLOBAL FOOTER (Appears on every page) -->
+    <footer class="global-footer">
+      <div class="footer-left">
+        <span>&copy; 2026 Department of First Year Engineering &bull; <strong>Virtual Science Lab Portal</strong></span>
+      </div>
+      <div class="footer-right">
+        <div class="footer-links">
+          <span class="footer-link" onclick="openPrivacyModal()">Privacy Policy</span>
+          <span class="dot-divider">&bull;</span>
+          <span class="footer-link" onclick="openTermsModal()">Terms & Conditions</span>
+          <span class="dot-divider">&bull;</span>
+          <span class="footer-link" onclick="openHelpModal()">Help & Support</span>
+          <span class="dot-divider">&bull;</span>
+          <a href="mailto:support@vidyut-labs.edu" class="footer-link">support@vidyut-labs.edu</a>
+        </div>
+        <span class="mono" style="font-size:0.75rem; background:rgba(21,42,80,0.08); padding:2px 8px; border-radius:4px;">v1.0.3 &bull; 2026-07-21</span>
+      </div>
+    </footer>
+
   </div>
 
 </div>
@@ -178,10 +207,6 @@ if (!$faculty) {
     </div>
   </div>
 </div>
-
-<script>
-    window.loggedInFaculty = <?php echo json_encode($faculty); ?>;
-</script>
 
 <!-- Client-side Faculty Console Application Script -->
 <script src="../assets/js/faculty/faculty.js"></script>
