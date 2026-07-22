@@ -95,13 +95,14 @@
     isLoggedIn: false,
     currentView: 'dashboard',
     wizardStep: 1,
+    wizardActiveTab: 'theory',
     wizardData: {
       title: '', subject: 'chem', tag: 'CH·06', desc: '', difficulty: 'Basic',
-      theory: { intro: '', objectives: [''], keyFormula: '' },
-      procedure: [{ step: 'Set up apparatus and connect power source.', simType: 'ohms' }],
-      apparatus: [{ name: 'Multimeter', qty: '1 unit' }],
+      theory: { intro: '', objectives: ['Perform volumetric measurements.', 'Determine equivalence point.'], keyFormula: 'M1V1 = M2V2' },
+      procedure: [{ step: 'Fill buret with standard solution.', simType: 'titration' }, { step: 'Add indicator to flask.', simType: 'titration' }],
+      apparatus: [{ name: 'Buret', qty: '1 unit' }, { name: 'Erlenmeyer Flask', qty: '1 unit' }],
       media: [],
-      quiz: [{ question: 'What is the SI unit of electric current?', options: ['Volt', 'Ampere', 'Ohm', 'Watt'], correctIndex: 1 }]
+      quiz: [{ question: 'What color does phenolphthalein turn in base?', options: ['Colorless', 'Pink', 'Blue', 'Yellow'], correctIndex: 1 }]
     }
   };
 
@@ -112,6 +113,38 @@
     bindEvents();
     handleHashNavigation();
     window.addEventListener('hashchange', handleHashNavigation);
+
+    // Spotlight cursor tracking on dark surfaces
+    document.addEventListener('mousemove', e => {
+      const header = document.querySelector('.global-header');
+      const sidebar = document.querySelector('.sidebar');
+      if (header) {
+        const rect = header.getBoundingClientRect();
+        header.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        header.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      }
+      if (sidebar) {
+        const rect = sidebar.getBoundingClientRect();
+        sidebar.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        sidebar.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      }
+    });
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.btn-notif-bell') && !e.target.closest('#notifDropdownPanel')) {
+        const p = document.getElementById('notifDropdownPanel');
+        if (p) p.classList.remove('active');
+      }
+      if (!e.target.closest('.header-user-chip') && !e.target.closest('#profileDropdownPanel')) {
+        const p = document.getElementById('profileDropdownPanel');
+        if (p) p.classList.remove('active');
+      }
+      if (!e.target.closest('.global-search-wrap')) {
+        const p = document.getElementById('globalSearchResults');
+        if (p) p.classList.remove('active');
+      }
+    });
   }
 
   function bindEvents() {
@@ -122,14 +155,111 @@
         navigateTo(view);
       });
     });
-
-    // Top Bar Actions
-    const profileChip = document.getElementById('profileChip');
-    if (profileChip) profileChip.addEventListener('click', () => navigateTo('profile'));
-
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) logoutBtn.addEventListener('click', () => handleLogout());
   }
+
+  // Modal Overlays
+  window.openPrivacyModal = function () {
+    const m = document.getElementById('privacyModal');
+    if (m) m.style.display = 'flex';
+  };
+  window.openTermsModal = function () {
+    const m = document.getElementById('termsModal');
+    if (m) m.style.display = 'flex';
+  };
+  window.openHelpModal = function () {
+    const m = document.getElementById('helpModal');
+    if (m) m.style.display = 'flex';
+  };
+  window.closeLegalModal = function (modalId) {
+    const m = document.getElementById(modalId);
+    if (m) m.style.display = 'none';
+  };
+
+  // Header Dropdowns
+  window.toggleNotifDropdown = function () {
+    const notif = document.getElementById('notifDropdownPanel');
+    const profile = document.getElementById('profileDropdownPanel');
+    if (profile) profile.classList.remove('active');
+    if (notif) notif.classList.toggle('active');
+  };
+
+  window.toggleProfileDropdown = function () {
+    const notif = document.getElementById('notifDropdownPanel');
+    const profile = document.getElementById('profileDropdownPanel');
+    if (notif) notif.classList.remove('active');
+    if (profile) profile.classList.toggle('active');
+  };
+
+  window.handleLanguageChange = function (lang) {
+    alert(`Language changed to: ${lang === 'en' ? 'English' : lang === 'hi' ? 'Hindi' : 'Marathi'}`);
+  };
+
+  window.handleGlobalSearch = function (query) {
+    const dropdown = document.getElementById('globalSearchResults');
+    if (!dropdown) return;
+
+    if (!query.trim()) {
+      dropdown.classList.remove('active');
+      return;
+    }
+
+    const q = query.toLowerCase();
+    
+    // Filter subjects
+    const matchedSubjects = Object.values(appData.subjects).filter(s => 
+      s.name.toLowerCase().includes(q) || s.tag.toLowerCase().includes(q)
+    );
+
+    // Filter experiments
+    const matchedExperiments = appData.experiments.filter(e => 
+      e.title.toLowerCase().includes(q) || e.tag.toLowerCase().includes(q)
+    );
+
+    // Filter students
+    const matchedStudents = appData.studentsSummary.filter(st => 
+      st.name.toLowerCase().includes(q) || st.roll.toLowerCase().includes(q)
+    );
+
+    if (matchedSubjects.length === 0 && matchedExperiments.length === 0 && matchedStudents.length === 0) {
+      dropdown.innerHTML = `<div style="padding: 12px; font-size: 0.88rem; color: var(--ink-soft); text-align: center;">No matches found</div>`;
+      dropdown.classList.add('active');
+      return;
+    }
+
+    let html = '';
+    if (matchedSubjects.length > 0) {
+      html += `<div class="search-group-header">Subjects</div>`;
+      matchedSubjects.forEach(s => {
+        html += `<div class="search-result-item" onclick="window.location.hash='#subjects'; document.getElementById('globalSearchResults').classList.remove('active');">
+          <span>${s.name}</span>
+          <span class="mono" style="font-size: 0.7rem; padding: 2px 6px; background: rgba(21,42,80,0.05); border-radius: 4px;">${s.tag}</span>
+        </div>`;
+      });
+    }
+
+    if (matchedExperiments.length > 0) {
+      html += `<div class="search-group-header">Experiments</div>`;
+      matchedExperiments.forEach(e => {
+        html += `<div class="search-result-item" onclick="window.location.hash='#experiments'; document.getElementById('globalSearchResults').classList.remove('active');">
+          <span>${e.title}</span>
+          <span class="mono" style="font-size: 0.7rem; color: ${appData.subjects[e.subject]?.color || 'var(--ink-soft)'};">${e.tag}</span>
+        </div>`;
+      });
+    }
+
+    if (matchedStudents.length > 0) {
+      html += `<div class="search-group-header">Students</div>`;
+      matchedStudents.forEach(st => {
+        html += `<div class="search-result-item" onclick="window.location.hash='#reports'; openStudentDrawer('${st.roll}'); document.getElementById('globalSearchResults').classList.remove('active');">
+          <span>${st.name} (${st.roll})</span>
+          <span style="font-size: 0.8rem; color: var(--ink-soft);">${st.batch}</span>
+        </div>`;
+      });
+    }
+
+    dropdown.innerHTML = html;
+    dropdown.classList.add('active');
+  };
 
   /**
    * Router Engine
@@ -494,10 +624,127 @@
     renderCreateExperimentWizard();
   };
 
+  window.switchWizardTab = function (tabName) {
+    state.wizardActiveTab = tabName;
+    renderCreateExperimentWizard();
+  };
+
+  window.addObjective = function () {
+    state.wizardData.theory.objectives.push('');
+    renderCreateExperimentWizard();
+  };
+
+  window.removeObjective = function (index) {
+    state.wizardData.theory.objectives.splice(index, 1);
+    if (state.wizardData.theory.objectives.length === 0) {
+      state.wizardData.theory.objectives.push('');
+    }
+    renderCreateExperimentWizard();
+  };
+
+  window.addProcedureStep = function () {
+    state.wizardData.procedure.push({ step: '', simType: 'ohms' });
+    renderCreateExperimentWizard();
+  };
+
+  window.removeProcedureStep = function (index) {
+    state.wizardData.procedure.splice(index, 1);
+    if (state.wizardData.procedure.length === 0) {
+      state.wizardData.procedure.push({ step: '', simType: 'ohms' });
+    }
+    renderCreateExperimentWizard();
+  };
+
+  window.addApparatus = function () {
+    state.wizardData.apparatus.push({ name: '', qty: '' });
+    renderCreateExperimentWizard();
+  };
+
+  window.removeApparatus = function (index) {
+    state.wizardData.apparatus.splice(index, 1);
+    if (state.wizardData.apparatus.length === 0) {
+      state.wizardData.apparatus.push({ name: '', qty: '' });
+    }
+    renderCreateExperimentWizard();
+  };
+
+  window.simulateUpload = function (type) {
+    const filename = type === 'pdf' ? 'Lab_Manual_CS3.pdf' : type === 'video' ? 'Pendulum_Decay_Trace.mp4' : 'Schematic_Layout.png';
+    state.wizardData.media.push({
+      type: type,
+      filename: filename,
+      progress: 0
+    });
+    renderCreateExperimentWizard();
+
+    // Animate progress
+    const itemIndex = state.wizardData.media.length - 1;
+    let p = 0;
+    const interval = setInterval(() => {
+      p += 20;
+      if (p > 100) {
+        p = 100;
+        clearInterval(interval);
+      }
+      state.wizardData.media[itemIndex].progress = p;
+      const progressFill = document.getElementById(`upload-progress-${itemIndex}`);
+      const progressText = document.getElementById(`upload-text-${itemIndex}`);
+      if (progressFill) progressFill.style.width = `${p}%`;
+      if (progressText) progressText.textContent = `${p}%`;
+    }, 150);
+  };
+
+  window.removeUpload = function (index) {
+    state.wizardData.media.splice(index, 1);
+    renderCreateExperimentWizard();
+  };
+
+  window.addQuestion = function () {
+    state.wizardData.quiz.push({
+      question: 'New Question',
+      options: ['Option A', 'Option B', 'Option C', 'Option D'],
+      correctIndex: 0
+    });
+    renderCreateExperimentWizard();
+  };
+
+  window.removeQuestion = function (index) {
+    state.wizardData.quiz.splice(index, 1);
+    if (state.wizardData.quiz.length === 0) {
+      state.wizardData.quiz.push({
+        question: 'New Question',
+        options: ['Option A', 'Option B', 'Option C', 'Option D'],
+        correctIndex: 0
+      });
+    }
+    renderCreateExperimentWizard();
+  };
+
+  window.addQuizOption = function (qIndex) {
+    state.wizardData.quiz[qIndex].options.push('New Option');
+    renderCreateExperimentWizard();
+  };
+
+  window.removeQuizOption = function (qIndex, oIndex) {
+    state.wizardData.quiz[qIndex].options.splice(oIndex, 1);
+    if (state.wizardData.quiz[qIndex].options.length < 2) {
+      alert('A question must have at least 2 options.');
+      state.wizardData.quiz[qIndex].options.push('Option');
+    }
+    if (state.wizardData.quiz[qIndex].correctIndex >= state.wizardData.quiz[qIndex].options.length) {
+      state.wizardData.quiz[qIndex].correctIndex = 0;
+    }
+    renderCreateExperimentWizard();
+  };
+
+  window.setCorrectOption = function (qIndex, oIndex) {
+    state.wizardData.quiz[qIndex].correctIndex = oIndex;
+  };
+
   function renderWizardStepContent(step) {
     if (step === 1) {
       return `
-        <h3 class="section-title">Step 1: Add Experiment Basic Details</h3>
+        <h3 class="section-title" style="margin-bottom:16px;">Step 1: Add Experiment Basic Details</h3>
         <div class="form-field">
           <label>Experiment Title</label>
           <input type="text" placeholder="e.g. Acid-Base Titration & Equivalence Point" value="${state.wizardData.title}" oninput="state.wizardData.title=this.value">
@@ -505,10 +752,10 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
           <div class="form-field">
             <label>Subject Division</label>
-            <select onchange="state.wizardData.subject=this.value">
-              <option value="chem">Chemistry Lab</option>
-              <option value="phy">Physics Lab</option>
-              <option value="elec">Electrical Lab (BEEE)</option>
+            <select onchange="state.wizardData.subject=this.value" style="width: 100%; padding: 8px; border-radius: var(--r-sm); border: 1px solid rgba(21,42,80,0.15);">
+              <option value="chem" ${state.wizardData.subject === 'chem' ? 'selected' : ''}>Chemistry Lab</option>
+              <option value="phy" ${state.wizardData.subject === 'phy' ? 'selected' : ''}>Physics Lab</option>
+              <option value="elec" ${state.wizardData.subject === 'elec' ? 'selected' : ''}>Electrical Lab (BEEE)</option>
             </select>
           </div>
           <div class="form-field">
@@ -517,10 +764,10 @@
           </div>
           <div class="form-field">
             <label>Difficulty Level</label>
-            <select onchange="state.wizardData.difficulty=this.value">
-              <option value="Basic">Basic</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
+            <select onchange="state.wizardData.difficulty=this.value" style="width: 100%; padding: 8px; border-radius: var(--r-sm); border: 1px solid rgba(21,42,80,0.15);">
+              <option value="Basic" ${state.wizardData.difficulty === 'Basic' ? 'selected' : ''}>Basic</option>
+              <option value="Intermediate" ${state.wizardData.difficulty === 'Intermediate' ? 'selected' : ''}>Intermediate</option>
+              <option value="Advanced" ${state.wizardData.difficulty === 'Advanced' ? 'selected' : ''}>Advanced</option>
             </select>
           </div>
         </div>
@@ -532,24 +779,84 @@
     }
 
     if (step === 2) {
+      const activeTab = state.wizardActiveTab || 'theory';
+      let tabContentHTML = '';
+
+      if (activeTab === 'theory') {
+        tabContentHTML = `
+          <div class="form-field">
+            <label>Theory Overview Paragraph</label>
+            <textarea rows="3" placeholder="Explain core concepts and governing principles..." oninput="state.wizardData.theory.intro=this.value">${state.wizardData.theory.intro}</textarea>
+          </div>
+          <div class="form-field">
+            <label>Key Relation / Governing Formula Input</label>
+            <input type="text" placeholder="e.g. T = 2 * pi * sqrt(L / g)" value="${state.wizardData.theory.keyFormula}" oninput="state.wizardData.theory.keyFormula=this.value">
+          </div>
+          <div class="form-field">
+            <label>Learning Objectives</label>
+            <div id="objectives-list">
+              ${state.wizardData.theory.objectives.map((obj, idx) => `
+                <div class="builder-row">
+                  <input type="text" placeholder="Objective ${idx + 1}" value="${obj}" oninput="state.wizardData.theory.objectives[${idx}]=this.value" style="flex:1; padding: 6px 10px; border-radius:4px; border:1px solid rgba(21,42,80,0.15);">
+                  <button class="btn-remove-row" onclick="removeObjective(${idx})">&times; Remove</button>
+                </div>
+              `).join('')}
+            </div>
+            <button class="btn-add-row" onclick="addObjective()">+ Add Objective</button>
+          </div>
+        `;
+      } else if (activeTab === 'procedure') {
+        tabContentHTML = `
+          <div class="form-field">
+            <label>Simulation Governing Formula Selection</label>
+            <select onchange="state.wizardData.simFormula=this.value" style="width: 100%; padding: 8px; border-radius: var(--r-sm); border: 1px solid rgba(21,42,80,0.15);">
+              <option value="pendulum" ${state.wizardData.simFormula === 'pendulum' ? 'selected' : ''}>Pendulum: T = 2π√(L/g)</option>
+              <option value="projectile" ${state.wizardData.simFormula === 'projectile' ? 'selected' : ''}>Projectile Motion: Range = (v² × sin 2θ) / g</option>
+              <option value="ohms" ${state.wizardData.simFormula === 'ohms' ? 'selected' : ''}>Ohm's Law: I = V / R</option>
+              <option value="titration" ${state.wizardData.simFormula === 'titration' ? 'selected' : ''}>Titration: M1V1 = M2V2</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Procedure Steps</label>
+            <div id="procedure-steps-list">
+              ${state.wizardData.procedure.map((p, idx) => `
+                <div class="builder-row" style="align-items: flex-start;">
+                  <span class="mono" style="margin-top: 10px; font-weight: 700; width: 24px;">${idx + 1}.</span>
+                  <textarea rows="2" placeholder="Step ${idx + 1} instruction" oninput="state.wizardData.procedure[${idx}].step=this.value" style="flex:1; border: 1px solid rgba(21,42,80,0.15); border-radius: var(--r-sm); padding: 8px;">${p.step}</textarea>
+                  <button class="btn-remove-row" onclick="removeProcedureStep(${idx})" style="margin-top: 6px;">&times; Remove</button>
+                </div>
+              `).join('')}
+            </div>
+            <button class="btn-add-row" onclick="addProcedureStep()">+ Add Step</button>
+          </div>
+        `;
+      } else if (activeTab === 'apparatus') {
+        tabContentHTML = `
+          <div class="form-field">
+            <label>Apparatus Checklist Grid</label>
+            <div id="apparatus-list">
+              ${state.wizardData.apparatus.map((app, idx) => `
+                <div class="builder-row">
+                  <input type="text" placeholder="Material Name" value="${app.name}" oninput="state.wizardData.apparatus[${idx}].name=this.value" style="flex: 2; padding: 6px 10px; border-radius:4px; border:1px solid rgba(21,42,80,0.15);">
+                  <input type="text" placeholder="Quantity (e.g. 1 unit)" value="${app.qty}" oninput="state.wizardData.apparatus[${idx}].qty=this.value" style="flex: 1; padding: 6px 10px; border-radius:4px; border:1px solid rgba(21,42,80,0.15);">
+                  <button class="btn-remove-row" onclick="removeApparatus(${idx})">&times; Remove</button>
+                </div>
+              `).join('')}
+            </div>
+            <button class="btn-add-row" onclick="addApparatus()">+ Add Material</button>
+          </div>
+        `;
+      }
+
       return `
         <h3 class="section-title">Step 2: Build Theory, Procedure & Apparatus</h3>
-        <div class="form-field">
-          <label>Theory Overview Paragraph</label>
-          <textarea rows="3" placeholder="Explain core concepts and governing physics/chemistry principles...">${state.wizardData.theory.intro}</textarea>
+        <div class="wizard-tabs">
+          <button class="wizard-tab-btn ${activeTab === 'theory' ? 'active' : ''}" onclick="switchWizardTab('theory')">Theory Overview</button>
+          <button class="wizard-tab-btn ${activeTab === 'procedure' ? 'active' : ''}" onclick="switchWizardTab('procedure')">Procedure & Simulation</button>
+          <button class="wizard-tab-btn ${activeTab === 'apparatus' ? 'active' : ''}" onclick="switchWizardTab('apparatus')">Apparatus Grid</button>
         </div>
-        <div class="form-field">
-          <label>Governing Equation / Key Relation Formula</label>
-          <input type="text" placeholder="e.g. T = 2 * pi * sqrt(L / g)" value="${state.wizardData.theory.keyFormula}">
-        </div>
-        <div class="form-field">
-          <label>Simulation Governing Formula Selection</label>
-          <select>
-            <option value="pendulum">Pendulum: T = 2π√(L/g)</option>
-            <option value="projectile">Projectile Motion: Range = (v² × sin 2θ) / g</option>
-            <option value="ohms">Ohm's Law: I = V / R</option>
-            <option value="titration">Titration: M1V1 = M2V2</option>
-          </select>
+        <div class="wizard-tab-content">
+          ${tabContentHTML}
         </div>
       `;
     }
@@ -557,40 +864,92 @@
     if (step === 3) {
       return `
         <h3 class="section-title">Step 3: Upload Videos, PDFs & Diagrams</h3>
-        <div style="border: 2px dashed rgba(21,42,80,0.25); border-radius: var(--r-md); padding: 40px; text-align: center; background: var(--paper-dim); cursor: pointer;" onclick="alert('File upload simulated! Document added.')">
+        <div style="border: 2px dashed rgba(21,42,80,0.25); border-radius: var(--r-md); padding: 40px; text-align: center; background: var(--paper-dim); cursor: pointer;" onclick="simulateUpload('pdf')">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="2" style="margin-bottom: 10px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
           <p style="font-weight: 600; color: var(--ink);">Drag and drop lab manuals (PDF), videos (MP4), or schematic diagrams here</p>
-          <p style="font-size: 0.78rem; color: var(--ink-soft); margin-top: 4px;">Supported formats: PDF, PNG, JPG, MP4 (Max 50MB)</p>
+          <p style="font-size: 0.78rem; color: var(--ink-soft); margin-top: 4px;">Or click here to simulate file upload</p>
         </div>
+
+        <div style="margin-top: 24px;">
+          <h4 class="mono" style="font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 12px;">Simulate uploads:</h4>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-add-row" onclick="simulateUpload('pdf')">📄 Add PDF Manual</button>
+            <button class="btn-add-row" onclick="simulateUpload('video')">🎥 Add MP4 Video</button>
+            <button class="btn-add-row" onclick="simulateUpload('image')">🖼️ Add Schematic Image</button>
+          </div>
+        </div>
+
+        ${state.wizardData.media.length > 0 ? `
+          <div style="margin-top: 24px;">
+            <h4 class="section-subtitle" style="font-size: 0.9rem; margin-bottom: 12px;">Staged Media Files (${state.wizardData.media.length})</h4>
+            <div>
+              ${state.wizardData.media.map((med, idx) => `
+                <div class="media-upload-item">
+                  <div style="flex: 1; padding-right: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <strong>${med.filename}</strong>
+                      <span class="mono" id="upload-text-${idx}" style="font-size: 0.75rem;">${med.progress}%</span>
+                    </div>
+                    <div class="upload-progress-bar">
+                      <div class="upload-progress-fill" id="upload-progress-${idx}" style="width: ${med.progress}%;"></div>
+                    </div>
+                  </div>
+                  <button class="btn-remove-row" onclick="removeUpload(${idx})">&times; Remove</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
       `;
     }
 
     if (step === 4) {
       return `
         <h3 class="section-title">Step 4: Multiple-Choice Quiz Builder</h3>
-        <div class="form-field">
-          <label>Question 1 Text</label>
-          <input type="text" value="${state.wizardData.quiz[0].question}">
+        <div id="quiz-questions-container">
+          ${state.wizardData.quiz.map((q, qIdx) => `
+            <div class="drawer-section" style="position: relative;">
+              <button class="btn-remove-row" onclick="removeQuestion(${qIdx})" style="position: absolute; top: 12px; right: 16px;">&times; Remove Question</button>
+              <h4 class="mono" style="margin-bottom: 12px; color: var(--ink);">Question ${qIdx + 1}</h4>
+              <div class="form-field">
+                <label>Question Text</label>
+                <input type="text" placeholder="Enter question..." value="${q.question}" oninput="state.wizardData.quiz[${qIdx}].question=this.value">
+              </div>
+              <div class="form-field">
+                <label>Options & Correct Answer Choice</label>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                  ${q.options.map((opt, oIdx) => `
+                    <div class="builder-row">
+                      <input type="radio" name="correct-${qIdx}" ${q.correctIndex === oIdx ? 'checked' : ''} onchange="setCorrectOption(${qIdx}, ${oIdx})">
+                      <input type="text" placeholder="Option ${oIdx + 1}" value="${opt}" oninput="state.wizardData.quiz[${qIdx}].options[${oIdx}]=this.value" style="flex:1; padding: 6px 10px; border-radius:4px; border:1px solid rgba(21,42,80,0.15);">
+                      <button class="btn-remove-row" onclick="removeQuizOption(${qIdx}, ${oIdx})">&times;</button>
+                    </div>
+                  `).join('')}
+                </div>
+                <button class="btn-add-row" onclick="addQuizOption(${qIdx})" style="margin-top: 10px;">+ Add Option</button>
+              </div>
+            </div>
+          `).join('')}
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div class="form-field"><label>Option A</label><input type="text" value="${state.wizardData.quiz[0].options[0]}"></div>
-          <div class="form-field"><label>Option B (Correct)</label><input type="text" value="${state.wizardData.quiz[0].options[1]}"></div>
-          <div class="form-field"><label>Option C</label><input type="text" value="${state.wizardData.quiz[0].options[2]}"></div>
-          <div class="form-field"><label>Option D</label><input type="text" value="${state.wizardData.quiz[0].options[3]}"></div>
-        </div>
+        <button class="btn-add-row" onclick="addQuestion()" style="width: 100%; padding: 12px; margin-top: 12px; background: rgba(55, 183, 160, 0.08); border: 2px dashed var(--chem); border-radius: var(--r-md); font-weight: 700;">+ Add New Question</button>
       `;
     }
 
     if (step === 5) {
       return `
         <h3 class="section-title">Step 5: Publish & Review Experiment</h3>
-        <div style="background: var(--paper-dim); padding: 20px; border-radius: var(--r-md); margin-bottom: 20px;">
-          <p><strong>Title:</strong> ${state.wizardData.title || 'Acid-Base Titration & Kinetics'}</p>
-          <p><strong>Tag:</strong> ${state.wizardData.tag} &bull; <strong>Difficulty:</strong> ${state.wizardData.difficulty}</p>
-          <p><strong>Status:</strong> Ready for Publishing</p>
+        <div style="background: var(--paper-dim); padding: 24px; border-radius: var(--r-md); border: 1px solid rgba(21, 42, 80, 0.12); margin-bottom: 24px; line-height: 1.8;">
+          <p><strong>Title:</strong> ${state.wizardData.title || 'Untitled Experiment'}</p>
+          <p><strong>Subject:</strong> ${appData.subjects[state.wizardData.subject]?.name || state.wizardData.subject}</p>
+          <p><strong>Tag Code:</strong> ${state.wizardData.tag} &bull; <strong>Difficulty:</strong> ${state.wizardData.difficulty}</p>
+          <p><strong>Theory:</strong> ${state.wizardData.theory.intro ? state.wizardData.theory.intro.substring(0, 100) + '...' : 'Not specified'}</p>
+          <p><strong>Steps:</strong> ${state.wizardData.procedure.length} steps defined</p>
+          <p><strong>Materials:</strong> ${state.wizardData.apparatus.length} apparatus items listed</p>
+          <p><strong>Media Uploads:</strong> ${state.wizardData.media.length} files staged</p>
+          <p><strong>Quiz Questions:</strong> ${state.wizardData.quiz.length} questions built</p>
         </div>
         <div style="display: flex; gap: 12px;">
-          <button class="btn-primary-action" style="background: var(--paper-dim); color: var(--ink);" onclick="publishWizardExperiment('draft')">Save as Draft</button>
+          <button class="btn-primary-action" style="background: var(--paper-dim); color: var(--ink); border: 1px solid rgba(21, 42, 80, 0.15);" onclick="publishWizardExperiment('draft')">Save as Draft</button>
           <button class="btn-primary-action" onclick="publishWizardExperiment('published')">Publish Experiment Now</button>
         </div>
       `;
@@ -628,7 +987,92 @@
           <h1 class="welcome-title" style="font-size: 1.6rem;">Student Performance Analytics</h1>
           <p class="welcome-subtitle">Monitor individual student progress, experiment trial logs, and export performance reports.</p>
         </div>
-        <button class="btn-btn-add" onclick="generateReportDownload()">Download Performance Report (PDF/CSV)</button>
+        <button class="btn-btn-add" id="btnGenReport" onclick="generateReportDownload()">Download Performance Report (PDF/CSV)</button>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="wizard-panel" style="display: flex; gap: 16px; flex-wrap: wrap; padding: 16px; margin-bottom: 24px; background: var(--paper-dim);">
+        <div style="flex: 1; min-width: 150px;">
+          <label class="mono" style="font-size: 0.65rem; color: var(--ink-soft); display: block; margin-bottom: 4px;">Subject</label>
+          <select id="reportFilterSubject" onchange="filterReports()" style="width:100%; padding: 6px; border-radius:4px; border:1px solid rgba(21,42,80,0.15);">
+            <option value="all">All Subjects</option>
+            <option value="chemistry">Chemistry Lab</option>
+            <option value="physics">Physics Lab</option>
+            <option value="electrical">Electrical Lab</option>
+          </select>
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+          <label class="mono" style="font-size: 0.65rem; color: var(--ink-soft); display: block; margin-bottom: 4px;">Batch</label>
+          <select id="reportFilterBatch" onchange="filterReports()" style="width:100%; padding: 6px; border-radius:4px; border:1px solid rgba(21,42,80,0.15);">
+            <option value="all">All Batches</option>
+            <option value="CS-3A">CS-3A</option>
+            <option value="CS-3B">CS-3B</option>
+            <option value="ECE-2A">ECE-2A</option>
+            <option value="ME-2B">ME-2B</option>
+          </select>
+        </div>
+        <div style="flex: 1; min-width: 200px;">
+          <label class="mono" style="font-size: 0.65rem; color: var(--ink-soft); display: block; margin-bottom: 4px;">Search Student</label>
+          <input type="text" id="reportFilterSearch" placeholder="Search by name or roll..." oninput="filterReports()" style="width:100%; padding: 6px 12px; border-radius:4px; border:1px solid rgba(21,42,80,0.15);">
+        </div>
+      </div>
+
+      <!-- SVG Analytics Charts Section -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 28px;">
+        <!-- Chart 1: Average Score by Subject -->
+        <div class="stat-card" style="padding: 20px;">
+          <h3 class="mono" style="font-size: 0.8rem; margin-bottom: 16px; color: var(--ink);">Class Average Score by Subject</h3>
+          <svg viewBox="0 0 300 160" width="100%" height="160">
+            <line x1="40" y1="20" x2="280" y2="20" stroke="rgba(21,42,80,0.06)" stroke-width="1" />
+            <line x1="40" y1="70" x2="280" y2="70" stroke="rgba(21,42,80,0.06)" stroke-width="1" />
+            <line x1="40" y1="120" x2="280" y2="120" stroke="rgba(21,42,80,0.06)" stroke-width="1" />
+            <rect x="65" y="42" width="30" height="78" fill="var(--chem)" rx="2" />
+            <rect x="145" y="47" width="30" height="73" fill="var(--physics)" rx="2" />
+            <rect x="225" y="36" width="30" height="84" fill="var(--electrical)" rx="2" />
+            <line x1="40" y1="120" x2="280" y2="120" stroke="var(--ink)" stroke-width="1" />
+            <text x="80" y="140" font-size="9" fill="var(--ink-soft)" font-family="var(--font-mono)" text-anchor="middle">CHEM</text>
+            <text x="160" y="140" font-size="9" fill="var(--ink-soft)" font-family="var(--font-mono)" text-anchor="middle">PHYS</text>
+            <text x="240" y="140" font-size="9" fill="var(--ink-soft)" font-family="var(--font-mono)" text-anchor="middle">ELEC</text>
+            <text x="80" y="34" font-size="10" font-weight="700" fill="var(--ink)" text-anchor="middle">88%</text>
+            <text x="160" y="39" font-size="10" font-weight="700" fill="var(--ink)" text-anchor="middle">83%</text>
+            <text x="240" y="28" font-size="10" font-weight="700" fill="var(--ink)" text-anchor="middle">92%</text>
+          </svg>
+        </div>
+
+        <!-- Chart 2: Completion Rate by Experiment -->
+        <div class="stat-card" style="padding: 20px;">
+          <h3 class="mono" style="font-size: 0.8rem; margin-bottom: 16px; color: var(--ink);">Experiment Completion Rate</h3>
+          <svg viewBox="0 0 300 160" width="100%" height="160">
+            <text x="10" y="30" font-size="10" fill="var(--ink)" font-family="var(--font-mono)">CH·01</text>
+            <rect x="60" y="21" width="180" height="12" fill="rgba(21,42,80,0.06)" rx="3" />
+            <rect x="60" y="21" width="171" height="12" fill="var(--chem)" rx="3" />
+            <text x="250" y="30" font-size="9" font-weight="700" fill="var(--ink)">95%</text>
+            
+            <text x="10" y="65" font-size="10" fill="var(--ink)" font-family="var(--font-mono)">PH·01</text>
+            <rect x="60" y="56" width="180" height="12" fill="rgba(21,42,80,0.06)" rx="3" />
+            <rect x="60" y="56" width="173" height="12" fill="var(--physics)" rx="3" />
+            <text x="250" y="65" font-size="9" font-weight="700" fill="var(--ink)">96%</text>
+
+            <text x="10" y="100" font-size="10" fill="var(--ink)" font-family="var(--font-mono)">EE·01</text>
+            <rect x="60" y="91" width="180" height="12" fill="rgba(21,42,80,0.06)" rx="3" />
+            <rect x="60" y="91" width="178" height="12" fill="var(--electrical)" rx="3" />
+            <text x="250" y="100" font-size="9" font-weight="700" fill="var(--ink)">99%</text>
+          </svg>
+        </div>
+
+        <!-- Chart 3: Score Distribution -->
+        <div class="stat-card" style="padding: 20px;">
+          <h3 class="mono" style="font-size: 0.8rem; margin-bottom: 16px; color: var(--ink);">Score Distribution Curve</h3>
+          <svg viewBox="0 0 300 160" width="100%" height="160">
+            <path d="M 40 120 Q 90 120 120 80 T 200 40 T 280 120 Z" fill="rgba(55,183,160,0.12)" />
+            <path d="M 40 120 Q 90 120 120 80 T 200 40 T 280 120" fill="none" stroke="var(--chem)" stroke-width="2" />
+            <line x1="40" y1="120" x2="280" y2="120" stroke="var(--ink)" stroke-width="1" />
+            <text x="40" y="135" font-size="9" fill="var(--ink-soft)" font-family="var(--font-mono)" text-anchor="middle">&lt;60%</text>
+            <text x="120" y="135" font-size="9" fill="var(--ink-soft)" font-family="var(--font-mono)" text-anchor="middle">70%</text>
+            <text x="200" y="135" font-size="9" fill="var(--ink-soft)" font-family="var(--font-mono)" text-anchor="middle">80%</text>
+            <text x="280" y="135" font-size="9" fill="var(--ink-soft)" font-family="var(--font-mono)" text-anchor="middle">90%+</text>
+          </svg>
+        </div>
       </div>
 
       <div class="data-table-wrap">
@@ -646,34 +1090,114 @@
               <th>Action</th>
             </tr>
           </thead>
-          <tbody>
-            ${appData.studentsSummary.map(st => `
-              <tr>
-                <td><strong>${st.name}</strong></td>
-                <td class="mono">${st.roll}</td>
-                <td class="mono">${st.batch}</td>
-                <td>${st.subject}</td>
-                <td>${st.expCompleted} / 5</td>
-                <td><strong style="color: var(--chem);">${st.avgScore}%</strong></td>
-                <td>${st.hoursLogged}h</td>
-                <td style="font-size: 0.8rem; color: var(--ink-soft);">${st.lastActive}</td>
-                <td><button class="btn-action-icon" onclick="openStudentDrawer('${st.roll}')">View Details</button></td>
-              </tr>
-            `).join('')}
+          <tbody id="reportsTableBody">
+            ${renderReportsTableRows(appData.studentsSummary)}
           </tbody>
         </table>
       </div>
     `;
   }
 
+  function renderReportsTableRows(students) {
+    return students.map(st => `
+      <tr class="student-row">
+        <td><strong>${st.name}</strong></td>
+        <td class="mono">${st.roll}</td>
+        <td class="mono">${st.batch}</td>
+        <td>${st.subject}</td>
+        <td>${st.expCompleted} / 5</td>
+        <td><strong style="color: var(--chem);">${st.avgScore}%</strong></td>
+        <td>${st.hoursLogged}h</td>
+        <td style="font-size: 0.8rem; color: var(--ink-soft);">${st.lastActive}</td>
+        <td><button class="btn-action-icon" onclick="openStudentDrawer('${st.roll}')">View Details</button></td>
+      </tr>
+    `).join('');
+  }
+
+  window.filterReports = function () {
+    const sub = document.getElementById('reportFilterSubject').value;
+    const batch = document.getElementById('reportFilterBatch').value;
+    const query = document.getElementById('reportFilterSearch').value.toLowerCase();
+
+    let filtered = appData.studentsSummary;
+
+    if (sub !== 'all') {
+      const subName = sub === 'chemistry' ? 'chemistry lab' : sub === 'physics' ? 'physics lab' : 'electrical lab';
+      filtered = filtered.filter(st => st.subject.toLowerCase() === subName);
+    }
+    if (batch !== 'all') {
+      filtered = filtered.filter(st => st.batch === batch);
+    }
+    if (query) {
+      filtered = filtered.filter(st => 
+        st.name.toLowerCase().includes(query) || st.roll.toLowerCase().includes(query)
+      );
+    }
+
+    const tbody = document.getElementById('reportsTableBody');
+    if (tbody) tbody.innerHTML = renderReportsTableRows(filtered);
+  };
+
   window.generateReportDownload = function () {
-    alert('Generating report PDF/CSV... File download complete.');
+    const btn = document.getElementById('btnGenReport');
+    if (!btn) return;
+
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Generating PDF/CSV Report...';
+    btn.style.opacity = '0.7';
+
+    setTimeout(() => {
+      alert('Report generated and downloaded successfully!');
+      btn.disabled = false;
+      btn.textContent = originalText;
+      btn.style.opacity = '1';
+    }, 1500);
   };
 
   window.openStudentDrawer = function (roll) {
     const st = appData.studentsSummary.find(s => s.roll === roll);
     if (!st) return;
-    alert(`Student Drawer for ${st.name} (${st.roll})\nExperiments Completed: ${st.expCompleted}\nAverage Score: ${st.avgScore}%\nHours Logged: ${st.hoursLogged}h`);
+
+    const drawer = document.getElementById('studentDrawer');
+    const content = document.getElementById('studentDrawerContent');
+    if (!drawer || !content) return;
+
+    content.innerHTML = `
+      <span class="drawer-close-btn" onclick="closeStudentDrawer()">&times;</span>
+      <h2 class="drawer-title" style="margin-top:16px;">${st.name}</h2>
+      <p class="drawer-subtitle">ROLL NUMBER: ${st.roll} &bull; BATCH: ${st.batch}</p>
+
+      <div class="drawer-section">
+        <h3 class="drawer-section-title">Telemetry Summary</h3>
+        <p><strong>Subject Bench:</strong> ${st.subject}</p>
+        <p><strong>Experiments Completed:</strong> ${st.expCompleted} / 5</p>
+        <p><strong>Average Performance Score:</strong> ${st.avgScore}%</p>
+        <p><strong>Total Hours Logged:</strong> ${st.hoursLogged} hours</p>
+        <p><strong>Last Active Timestamp:</strong> ${st.lastActive}</p>
+      </div>
+
+      <div class="drawer-section">
+        <h3 class="drawer-section-title">Completed Trial Log Details</h3>
+        <div style="font-size: 0.85rem; line-height: 1.8;">
+          <p><strong>Trial 1:</strong> Completed successfully (Score: ${st.avgScore + 2}%, Time: 45 min)</p>
+          <p><strong>Trial 2:</strong> Completed successfully (Score: ${st.avgScore - 4}%, Time: 52 min)</p>
+          <p><strong>Trial 3:</strong> Completed successfully (Score: ${st.avgScore}%, Time: 38 min)</p>
+        </div>
+      </div>
+    `;
+
+    drawer.classList.add('active');
+    content.classList.add('active');
+  };
+
+  window.closeStudentDrawer = function () {
+    const drawer = document.getElementById('studentDrawer');
+    const content = document.getElementById('studentDrawerContent');
+    if (drawer && content) {
+      drawer.classList.remove('active');
+      content.classList.remove('active');
+    }
   };
 
   /**
@@ -686,22 +1210,31 @@
     container.innerHTML = `
       <div class="welcome-header">
         <h1 class="welcome-title" style="font-size: 1.6rem;">Compose Student Announcement</h1>
-        <p class="welcome-subtitle">Send notifications and lab schedule updates to enrolled student batches.</p>
+        <p class="welcome-subtitle">Send notifications, broadcast alerts, and lab schedule updates to enrolled student batches.</p>
       </div>
 
       <div class="wizard-panel" style="margin-bottom: 32px;">
-        <div class="form-field">
-          <label>Target Audience</label>
-          <select id="notifAudience">
-            <option value="All Students">All Enrolled Students (240)</option>
-            <option value="Chemistry Students">Chemistry Students (80)</option>
-            <option value="Physics Students">Physics Students (80)</option>
-            <option value="Electrical Students">Electrical Students (80)</option>
-          </select>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div class="form-field" style="margin-bottom: 0;">
+            <label>Target Audience</label>
+            <select id="notifAudience" onchange="toggleIndividualInput(this.value)" style="width: 100%; padding: 8px; border-radius: var(--r-sm); border: 1px solid rgba(21,42,80,0.15);">
+              <option value="All Students">All Enrolled Students (240)</option>
+              <option value="Chemistry Students">Chemistry Students (80)</option>
+              <option value="Physics Students">Physics Students (80)</option>
+              <option value="Electrical Students">Electrical Students (80)</option>
+              <option value="Batch CS-3A">Batch CS-3A (40)</option>
+              <option value="Batch CS-3B">Batch CS-3B (40)</option>
+              <option value="Individual">Individual Student</option>
+            </select>
+          </div>
+          <div class="form-field" id="individualStudentWrap" style="display: none; margin-bottom: 0;">
+            <label>Student Roll Number</label>
+            <input type="text" id="notifStudentRoll" placeholder="e.g. 21AI045" style="width: 100%; padding: 8px; border-radius: var(--r-sm); border: 1px solid rgba(21,42,80,0.15);">
+          </div>
         </div>
         <div class="form-field">
           <label>Notification Message</label>
-          <textarea id="notifMsg" rows="3" placeholder="Enter announcement text..."></textarea>
+          <textarea id="notifMsg" rows="3" placeholder="Enter broadcast message text..."></textarea>
         </div>
         <button class="btn-primary-action" onclick="sendNotification()">Send Notification Broadcast</button>
       </div>
@@ -721,13 +1254,29 @@
     `;
   }
 
+  window.toggleIndividualInput = function (val) {
+    const wrap = document.getElementById('individualStudentWrap');
+    if (wrap) {
+      wrap.style.display = val === 'Individual' ? 'block' : 'none';
+    }
+  };
+
   window.sendNotification = function () {
     const msg = document.getElementById('notifMsg').value;
-    const audience = document.getElementById('notifAudience').value;
+    let audience = document.getElementById('notifAudience').value;
 
     if (!msg) {
       alert('Please enter a notification message.');
       return;
+    }
+
+    if (audience === 'Individual') {
+      const roll = document.getElementById('notifStudentRoll').value.trim();
+      if (!roll) {
+        alert('Please enter the target student roll number.');
+        return;
+      }
+      audience = `Student Roll: ${roll}`;
     }
 
     appData.notifications.unshift({
@@ -750,13 +1299,37 @@
     if (!container) return;
 
     const f = appData.faculty;
+    const editing = state.profileEditing || false;
+
+    let formHTML = '';
+    if (editing) {
+      formHTML = `
+        <div class="form-field"><label>Email Address</label><input type="text" id="profEmail" value="${f.email}"></div>
+        <div class="form-field"><label>Phone Contact</label><input type="text" id="profPhone" value="${f.phone}"></div>
+        <div class="form-field"><label>Department</label><input type="text" id="profDept" value="${f.department}"></div>
+        <div class="form-field"><label>Designation</label><input type="text" id="profDesg" value="${f.designation}"></div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-primary-action" style="max-width: 200px; margin-top: 10px;" onclick="saveProfileChanges()">Save Profile Changes</button>
+          <button class="btn-primary-action" style="max-width: 200px; margin-top: 10px; background: var(--paper-dim); color: var(--ink); border: 1px solid rgba(21,42,80,0.15);" onclick="toggleProfileEdit(false)">Cancel</button>
+        </div>
+      `;
+    } else {
+      formHTML = `
+        <div class="form-field"><label>Email Address</label><div style="padding: 10px 0; font-size: 0.95rem; font-weight: 600;">${f.email}</div></div>
+        <div class="form-field"><label>Phone Contact</label><div style="padding: 10px 0; font-size: 0.95rem; font-weight: 600;">${f.phone}</div></div>
+        <div class="form-field"><label>Department</label><div style="padding: 10px 0; font-size: 0.95rem; font-weight: 600;">${f.department}</div></div>
+        <div class="form-field"><label>Designation</label><div style="padding: 10px 0; font-size: 0.95rem; font-weight: 600;">${f.designation}</div></div>
+        <button class="btn-primary-action" style="max-width: 200px; margin-top: 10px;" onclick="toggleProfileEdit(true)">Edit Profile</button>
+      `;
+    }
+
     container.innerHTML = `
-      <div class="profile-banner">
-        <div class="profile-avatar-large">${f.initials}</div>
-        <div>
-          <p class="profile-roll-tag mono">FACULTY ID: ${f.facultyId}</p>
-          <h1 class="profile-main-name">${f.name}</h1>
-          <p class="profile-program-text">${f.designation} &bull; ${f.department}</p>
+      <div class="profile-banner" style="background: var(--blueprint); color: var(--white); padding: 24px; border-radius: var(--r-md); display: flex; align-items: center; gap: 20px; position: relative; overflow: hidden; margin-bottom: 24px;">
+        <div class="profile-avatar-large" style="width: 72px; height: 72px; background: var(--white); color: var(--blueprint); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700;">${f.initials}</div>
+        <div style="z-index: 2;">
+          <p class="profile-roll-tag mono" style="font-size: 0.72rem; color: var(--electrical);">${f.facultyId}</p>
+          <h1 class="profile-main-name" style="font-size: 1.5rem; font-weight: 700;">${f.name}</h1>
+          <p class="profile-program-text" style="font-size: 0.88rem; opacity: 0.85;">${f.designation} &bull; ${f.department}</p>
         </div>
       </div>
 
@@ -767,15 +1340,38 @@
         <div class="stat-card"><div class="stat-label mono">Average Class Score</div><div class="stat-value">${f.stats.avgClassScore}%</div></div>
       </div>
 
-      <div class="data-table-wrap">
+      <div class="data-table-wrap" style="padding: 24px;">
         <h3 class="section-title" style="margin-bottom: 16px;">Faculty Credentials</h3>
-        <div class="form-field"><label>Email Address</label><input type="text" value="${f.email}"></div>
-        <div class="form-field"><label>Phone Contact</label><input type="text" value="${f.phone}"></div>
-        <div class="form-field"><label>Department</label><input type="text" value="${f.department}"></div>
-        <button class="btn-primary-action" style="max-width: 200px; margin-top: 10px;" onclick="alert('Profile updated successfully!')">Save Profile Changes</button>
+        ${formHTML}
       </div>
     `;
   }
+
+  window.toggleProfileEdit = function (isEditing) {
+    state.profileEditing = isEditing;
+    renderProfileView();
+  };
+
+  window.saveProfileChanges = function () {
+    const email = document.getElementById('profEmail').value.trim();
+    const phone = document.getElementById('profPhone').value.trim();
+    const dept = document.getElementById('profDept').value.trim();
+    const desg = document.getElementById('profDesg').value.trim();
+
+    if (!email || !phone || !dept || !desg) {
+      alert('Please fill out all credentials.');
+      return;
+    }
+
+    appData.faculty.email = email;
+    appData.faculty.phone = phone;
+    appData.faculty.department = dept;
+    appData.faculty.designation = desg;
+
+    state.profileEditing = false;
+    alert('Faculty profile updated successfully!');
+    renderProfileView();
+  };
 
   // Bind global functions & initialize app on DOM load
   document.addEventListener('DOMContentLoaded', init);

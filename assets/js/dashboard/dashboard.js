@@ -508,13 +508,28 @@
       }
     }
   };
-  const headerInitials = document.getElementById('headerInitials');
-  const headerName = document.getElementById('headerName');
+  // Dynamic Stats & Achievements Pre-Calculation
+  let compCount = 0;
+  let quizCount = 0;
+  let totalScore = 0;
+  let totalCompletedWithQuiz = 0;
 
-  if (headerInitials && headerName) {
-    headerInitials.textContent = appData.student.initials;
-    headerName.textContent = appData.student.name;
-  }
+  Object.values(appData.subjects).forEach(sub => {
+    sub.experiments.forEach(exp => {
+      if (exp.status === 'completed') {
+        compCount++;
+        quizCount++;
+        totalScore += 90; // mock quiz score for completed experiments
+        totalCompletedWithQuiz++;
+      }
+    });
+  });
+
+  appData.student.stats.completedCount = compCount;
+  appData.student.stats.quizzesAttempted = quizCount;
+  appData.student.stats.avgScore = totalCompletedWithQuiz > 0 ? Math.round(totalScore / totalCompletedWithQuiz) : 85;
+  appData.student.stats.hoursLogged = compCount * 2 + 3;
+  appData.student.badges = ["Lab Pioneer", "Precision Expert", "Circuit Master"];
 
   // State Engine
   const state = {
@@ -530,10 +545,174 @@
    * Main App Initializer
    */
   function init() {
+    // Bind profile values
+    const headerInitials = document.getElementById('headerInitials');
+    const headerName = document.getElementById('headerName');
+    if (headerInitials) headerInitials.textContent = appData.student.initials;
+    if (headerName) headerName.textContent = appData.student.name;
+
     bindEvents();
     handleHashNavigation();
     window.addEventListener('hashchange', handleHashNavigation);
+
+    // Mouse Spotlight Cursor Effect
+    document.addEventListener('mousemove', e => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const x = e.clientX;
+      const y = e.clientY;
+      document.documentElement.style.setProperty('--mouse-x', `${x}px`);
+      document.documentElement.style.setProperty('--mouse-y', `${y}px`);
+    });
+
+    // Close Dropdowns on outside click
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.btn-notif-bell') && !e.target.closest('.notif-dropdown-panel')) {
+        document.getElementById('notifDropdownPanel')?.classList.remove('active');
+      }
+      if (!e.target.closest('.header-user-chip') && !e.target.closest('.profile-dropdown-panel')) {
+        document.getElementById('profileDropdownPanel')?.classList.remove('active');
+      }
+      if (!e.target.closest('.btn-mobile-overflow') && !e.target.closest('.mobile-overflow-panel')) {
+        document.getElementById('mobileOverflowPanel')?.classList.remove('active');
+      }
+      if (!e.target.closest('.global-search-wrap')) {
+        document.getElementById('globalSearchResults')?.classList.remove('active');
+      }
+    });
+
+    // Populate mobile notifications
+    const mobileNotifsList = document.getElementById('mobileNotifsList');
+    if (mobileNotifsList) {
+      mobileNotifsList.innerHTML = `
+        <div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><strong>CH·01 titration manual</strong> updated</div>
+        <div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><strong>First-year records</strong> due soon</div>
+        <div style="padding:4px 0;"><strong>Ohm's Law Quiz</strong> now open</div>
+      `;
+    }
   }
+
+  // Dropdown Panels Toggle Helpers
+  window.toggleNotifDropdown = function () {
+    const panel = document.getElementById('notifDropdownPanel');
+    if (panel) {
+      panel.classList.toggle('active');
+      document.getElementById('profileDropdownPanel')?.classList.remove('active');
+      document.getElementById('mobileOverflowPanel')?.classList.remove('active');
+    }
+  };
+
+  window.toggleProfileDropdown = function () {
+    const panel = document.getElementById('profileDropdownPanel');
+    if (panel) {
+      panel.classList.toggle('active');
+      document.getElementById('notifDropdownPanel')?.classList.remove('active');
+      document.getElementById('mobileOverflowPanel')?.classList.remove('active');
+    }
+  };
+
+  window.toggleMobileOverflow = function () {
+    const panel = document.getElementById('mobileOverflowPanel');
+    if (panel) {
+      panel.classList.toggle('active');
+      document.getElementById('notifDropdownPanel')?.classList.remove('active');
+      document.getElementById('profileDropdownPanel')?.classList.remove('active');
+    }
+  };
+
+  // Language & Session Handlers
+  window.handleLanguageChange = function (lang) {
+    alert(`Language switched to: ${lang === 'en' ? 'English' : lang === 'hi' ? 'Hindi' : 'Marathi'}`);
+  };
+
+  window.handleLogout = function () {
+    if (confirm('Are you sure you want to log out of the Student Portal?')) {
+      window.location.href = '../login.php';
+    }
+  };
+
+  // Global Interactive Search Indexing
+  window.handleGlobalSearch = function (query) {
+    const resultsDiv = document.getElementById('globalSearchResults');
+    if (!resultsDiv) return;
+
+    if (!query.trim()) {
+      resultsDiv.classList.remove('active');
+      resultsDiv.innerHTML = '';
+      return;
+    }
+
+    const q = query.toLowerCase();
+    const matches = [];
+
+    // Search Experiments
+    Object.keys(appData.subjects).forEach(subKey => {
+      const sub = appData.subjects[subKey];
+      sub.experiments.forEach(exp => {
+        if (exp.title.toLowerCase().includes(q) || exp.tag.toLowerCase().includes(q) || exp.desc.toLowerCase().includes(q)) {
+          matches.push({
+            type: 'Experiment',
+            name: `${exp.tag} — ${exp.title}`,
+            hash: `#exp/${subKey}/${exp.id}`
+          });
+        }
+      });
+    });
+
+    // Search Subjects
+    Object.keys(appData.subjects).forEach(subKey => {
+      const sub = appData.subjects[subKey];
+      if (sub.name.toLowerCase().includes(q) || sub.desc.toLowerCase().includes(q)) {
+        matches.push({
+          type: 'Subject Lab Bench',
+          name: sub.name,
+          hash: `#subject/${subKey}`
+        });
+      }
+    });
+
+    if (matches.length === 0) {
+      resultsDiv.innerHTML = `<div style="padding:12px; font-size:0.85rem; color:var(--ink-soft); text-align:center;">No results found for "${query}"</div>`;
+    } else {
+      resultsDiv.innerHTML = `
+        <div class="search-group-header">Matches (${matches.length})</div>
+        ${matches.map(m => `
+          <div class="search-result-item" onclick="handleSearchSelection('${m.hash}')">
+            <div>
+              <div style="font-weight:700; font-size:0.9rem; color:var(--ink);">${m.name}</div>
+              <div style="font-size:0.7rem; color:var(--ink-soft); text-transform:uppercase;">${m.type}</div>
+            </div>
+            <span style="font-size:0.9rem; color:var(--chem); font-weight:700;">&rarr;</span>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    resultsDiv.classList.add('active');
+  };
+
+  window.handleSearchSelection = function (hash) {
+    const resultsDiv = document.getElementById('globalSearchResults');
+    if (resultsDiv) resultsDiv.classList.remove('active');
+    const searchInput = document.getElementById('globalSearchInput');
+    if (searchInput) searchInput.value = '';
+    window.location.hash = hash;
+  };
+
+  window.toggleMobileSearch = function () {
+    const wrap = document.getElementById('headerSearchWrap');
+    if (wrap) wrap.classList.toggle('expanded');
+  };
+
+  // Footer Policy Modals Handlers
+  window.openFooterModal = function (modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.add('active');
+  };
+
+  window.closeFooterModal = function (modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('active');
+  };
 
   /**
    * Binds UI interactions & navigation listeners
