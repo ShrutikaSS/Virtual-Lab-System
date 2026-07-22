@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="assets/css/landing/landing.css">
+  <link rel="stylesheet" href="animations.css">
 </head>
 
 <body>
@@ -23,7 +24,7 @@
   <!-- ============================================================
        1. STICKY HEADER
        ============================================================ -->
-  <header id="main-header" role="banner">
+  <header id="site-nav" role="banner">
     <div class="container header-container">
 
       <!-- Logo mark: flask/circuit hybrid SVG inside a ring -->
@@ -58,7 +59,7 @@
       <!-- Right-side nav -->
       <nav class="header-nav" id="main-nav" aria-label="Primary navigation">
         <a href="#help" class="help-link" id="nav-help-link">Help</a>
-        <a href="login.php" class="btn btn-primary" id="header-login-btn" data-action="login">Login</a>
+        <a href="login.php" class="btn btn-primary btn-lift" id="header-login-btn" data-action="login">Login</a>
       </nav>
 
     </div>
@@ -76,21 +77,21 @@
         <div class="hero-content">
           <span class="hero-eyebrow" id="hero-eyebrow">Chemistry &middot; Physics &middot; Electrical</span>
 
-          <h1 class="hero-headline" id="hero-title">
+          <h1 class="hero-headline fade-up fade-up-1" id="hero-title">
             Measure, simulate,<br>
             and verify from<br>
             <span class="emphasis">your own screen.</span>
           </h1>
 
-          <p class="hero-subcopy" id="hero-desc">
+          <p class="hero-subcopy fade-up fade-up-2" id="hero-desc">
             Execute acid-base titrations to the equivalence point, trace Wheatstone bridge
             balance conditions, and plot pendulum decay curves — all without waiting for a
             physical bench.
           </p>
 
           <div class="hero-ctas">
-            <a href="login.php" class="btn btn-primary" id="hero-launch-btn" data-action="login">Launch Workspace</a>
-            <a href="#experiments" class="btn btn-ghost" id="hero-view-btn">View Simulations</a>
+            <a href="login.php" class="btn btn-primary btn-lift fade-up fade-up-3" id="hero-launch-btn" data-action="login">Launch Workspace</a>
+            <a href="#experiments" class="btn btn-ghost fade-up fade-up-4" id="hero-view-btn">View Simulations</a>
           </div>
         </div>
 
@@ -233,7 +234,7 @@
     <!-- ============================================================
          3. ABOUT SECTION
          ============================================================ -->
-    <section class="about bg-paper" id="about-section" aria-labelledby="about-title">
+    <section class="about bg-paper on-scroll" id="about-section" aria-labelledby="about-title">
       <div class="container about-grid">
 
         <!-- Left column: copy + stat rail -->
@@ -250,11 +251,11 @@
           <!-- Stat rail: 3 Disciplines / 40+ Experiments / 24/7 Access -->
           <div class="stat-rail" id="about-stats" role="region" aria-label="Platform statistics">
             <div class="stat-item">
-              <div class="stat-num" data-target="3" data-suffix="">3</div>
+              <div class="stat-num"><span class="count-num" data-count="3">3</span></div>
               <div class="stat-label">Disciplines</div>
             </div>
             <div class="stat-item">
-              <div class="stat-num" data-target="40" data-suffix="+">40+</div>
+              <div class="stat-num"><span class="count-num" data-count="40">40</span>+</div>
               <div class="stat-label">Experiments</div>
             </div>
             <div class="stat-item">
@@ -265,7 +266,7 @@
         </div>
 
         <!-- Right column: dark blueprint spec card -->
-        <div class="spec-card reveal">
+        <div class="spec-card reveal hover-lift">
           <div class="spec-card-heading">ZEAL.SYSTEM.SPECIFICATION</div>
           <ul>
             <li>Add titrant drop by drop and watch the pH curve update in real time to find the equivalence point.</li>
@@ -281,7 +282,7 @@
     <!-- ============================================================
          4. FEATURED EXPERIMENTS
          ============================================================ -->
-    <section class="experiments bg-paper-dim" id="experiments" aria-labelledby="exp-section-title">
+    <section class="experiments bg-paper-dim on-scroll" id="experiments" aria-labelledby="exp-section-title">
       <div class="container">
 
         <div class="section-header">
@@ -294,10 +295,10 @@
         <div class="experiments-grid">
 
           <!-- CH·01 — Acid-Base Equivalence -->
-          <article class="exp-card chem reveal" id="exp-ch-01">
+          <article class="exp-card chem reveal hover-lift" id="exp-ch-01">
             <div class="exp-meta">
               <span class="exp-tag">CH&middot;01</span>
-              <div class="exp-icon" aria-hidden="true">
+              <div class="exp-icon icon-pop" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                   <path d="M9 3h6v4l4 9a2 2 0 0 1-1.8 2.9H6.8A2 2 0 0 1 5 16l4-9V3z" stroke-linecap="round" stroke-linejoin="round"/>
                   <line x1="8.5" y1="10" x2="15.5" y2="10" stroke-dasharray="2 2"/>
@@ -311,10 +312,10 @@
           </article>
 
           <!-- CH·02 — Chemical Kinetics -->
-          <article class="exp-card chem reveal" id="exp-ch-02">
+          <article class="exp-card chem reveal hover-lift" id="exp-ch-02">
             <div class="exp-meta">
               <span class="exp-tag">CH&middot;02</span>
-              <div class="exp-icon" aria-hidden="true">
+              <div class="exp-icon icon-pop" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                   <path d="M6 3h12v2l-2 3h-8L6 5V3z" stroke-linejoin="round"/>
                   <path d="M10 8v8M14 8v8" stroke-linecap="round"/>
@@ -329,10 +330,10 @@
           </article>
 
           <!-- PH·01 — Gravitational Constant -->
-          <article class="exp-card phys reveal" id="exp-ph-01">
+          <article class="exp-card phys reveal hover-lift" id="exp-ph-01">
             <div class="exp-meta">
               <span class="exp-tag">PH&middot;01</span>
-              <div class="exp-icon" aria-hidden="true">
+              <div class="exp-icon icon-pop" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                   <line x1="12" y1="2" x2="12" y2="4" stroke-linecap="round"/>
                   <line x1="12" y1="6" x2="12" y2="14" stroke-linecap="round" stroke-dasharray="2 1.5"/>
@@ -347,10 +348,10 @@
           </article>
 
           <!-- PH·02 — Prism Light Refraction -->
-          <article class="exp-card phys reveal" id="exp-ph-02">
+          <article class="exp-card phys reveal hover-lift" id="exp-ph-02">
             <div class="exp-meta">
               <span class="exp-tag">PH&middot;02</span>
-              <div class="exp-icon" aria-hidden="true">
+              <div class="exp-icon icon-pop" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                   <path d="M12 3 L2.5 20 H21.5 Z" stroke-linejoin="round"/>
                   <line x1="3" y1="16" x2="11" y2="14"/>
@@ -366,10 +367,10 @@
           </article>
 
           <!-- EL·01 — Wheatstone Bridge -->
-          <article class="exp-card elec reveal" id="exp-el-01">
+          <article class="exp-card elec reveal hover-lift" id="exp-el-01">
             <div class="exp-meta">
               <span class="exp-tag">EL&middot;01</span>
-              <div class="exp-icon" aria-hidden="true">
+              <div class="exp-icon icon-pop" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                   <path d="M12 2 L22 12 L12 22 L2 12 Z" stroke-linejoin="round"/>
                   <line x1="2"  y1="12" x2="22" y2="12"/>
@@ -384,10 +385,10 @@
           </article>
 
           <!-- EL·02 — RC Circuit Discharging -->
-          <article class="exp-card elec reveal" id="exp-el-02">
+          <article class="exp-card elec reveal hover-lift" id="exp-el-02">
             <div class="exp-meta">
               <span class="exp-tag">EL&middot;02</span>
-              <div class="exp-icon" aria-hidden="true">
+              <div class="exp-icon icon-pop" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                   <line x1="2"  y1="12" x2="8"  y2="12"/>
                   <line x1="16" y1="12" x2="22" y2="12"/>
@@ -410,7 +411,7 @@
     <!-- ============================================================
          5. ANNOUNCEMENTS LOG
          ============================================================ -->
-    <section class="announcements bg-paper" id="announcements-section" aria-labelledby="ann-title">
+    <section class="announcements bg-paper on-scroll" id="announcements-section" aria-labelledby="ann-title">
       <div class="container">
         <div class="section-header" style="margin-bottom:2rem">
           <div class="section-label">
@@ -468,7 +469,7 @@
     <!-- ============================================================
          6. CONTACT + HELP
          ============================================================ -->
-    <section class="support bg-blueprint-deep" id="help" aria-labelledby="contact-title">
+    <section class="support bg-blueprint-deep on-scroll" id="help" aria-labelledby="contact-title">
       <div class="container support-grid">
 
         <!-- Contact column -->
@@ -534,15 +535,19 @@
         <a href="#about-section" id="footer-about-link">About</a>
         <a href="#experiments"   id="footer-exp-link">Simulations</a>
         <a href="#help"          id="footer-help-link">Help Desk</a>
-        <a href="login.php" class="btn btn-primary" id="footer-login-btn" data-action="login">Login</a>
+        <a href="login.php" class="btn btn-primary btn-lift" id="footer-login-btn" data-action="login">Login</a>
       </nav>
     </div>
   </footer>
 
   <!-- Toast notification container (injected by JS) -->
 
+  <!-- Back to top button -->
+  <button id="back-to-top" aria-label="Back to top">↑</button>
+
   <!-- JS: landing page logic -->
   <script src="assets/js/landing/landing.js"></script>
+  <script src="animations.js"></script>
 
   <!-- Inline scroll-reveal CSS (keeps zero-JS fallback clean) -->
   <style>

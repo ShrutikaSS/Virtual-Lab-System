@@ -63,7 +63,7 @@
      STICKY HEADER GLASS EFFECT
      ============================================================ */
   function initStickyHeader() {
-    const header = document.getElementById('main-header');
+    const header = document.getElementById('site-nav');
     if (!header) return;
     const toggle = () => {
       header.classList.toggle('header-scrolled', window.scrollY > 48);

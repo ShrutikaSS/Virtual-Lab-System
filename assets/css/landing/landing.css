@@ -213,7 +213,7 @@ h6 {
 /* ============================================================
    1. STICKY HEADER
    ============================================================ */
-#main-header {
+#site-nav {
   position: sticky;
   top: 0;
   z-index: 900;
@@ -224,7 +224,7 @@ h6 {
     box-shadow var(--t-med) var(--ease-inout);
 }
 
-#main-header.header-scrolled {
+#site-nav.header-scrolled {
   background: rgba(21, 42, 80, 0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
