@@ -6,16 +6,23 @@
 (function () {
   'use strict';
 
+  function getInitials(name) {
+    if (!name) return 'F';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return parts.map(p => p[0]).join('').toUpperCase();
+  }
+
   // Sample Data Model for Faculty, Subjects, Experiments, Reports & Notifications
   const appData = {
     faculty: {
-      name: 'Dr. Rajesh Sharma',
-      initials: 'RS',
-      facultyId: 'FAC-8842',
+      name: 'Faculty',
+      initials: 'F',
+      facultyId: 'FAC-000',
       department: 'Department of Applied Sciences & Engineering',
-      designation: 'Senior Associate Professor & Head of Virtual Labs',
-      email: 'rajesh.sharma@institute.edu',
-      phone: '+91 98765 00112',
+      designation: 'Faculty Member & Lab Instructor',
+      email: '',
+      phone: '',
       stats: {
         subjectsHandled: 3,
         experimentsPublished: 15,
@@ -90,9 +97,20 @@
     ]
   };
 
+  if (window.loggedInFaculty) {
+    const fData = window.loggedInFaculty;
+    const fullName = fData.full_name || fData.username || 'Faculty Member';
+    appData.faculty.name = fullName;
+    appData.faculty.initials = getInitials(fullName);
+    appData.faculty.facultyId = fData.username ? fData.username.toUpperCase() : `FAC-${fData.id}`;
+    appData.faculty.email = fData.email || '';
+    appData.faculty.department = fData.department || 'Department of Applied Sciences & Engineering';
+    appData.faculty.designation = fData.designation || 'Faculty Member & Lab Instructor';
+  }
+
   // State Engine
   const state = {
-    isLoggedIn: false,
+    isLoggedIn: true,
     currentView: 'dashboard',
     wizardStep: 1,
     wizardData: {
@@ -109,9 +127,18 @@
    * App Initialization
    */
   function init() {
+    state.isLoggedIn = true;
+    updateHeaderProfile();
     bindEvents();
     handleHashNavigation();
     window.addEventListener('hashchange', handleHashNavigation);
+  }
+
+  function updateHeaderProfile() {
+    const headerName = document.getElementById('headerName');
+    const headerInitials = document.getElementById('headerInitials');
+    if (headerName) headerName.textContent = appData.faculty.name;
+    if (headerInitials) headerInitials.textContent = appData.faculty.initials;
   }
 
   function bindEvents() {
@@ -190,7 +217,7 @@
   function handleHashNavigation() {
     const hash = window.location.hash.replace('#', '');
     if (!hash || hash === 'login') {
-      navigateTo('login');
+      navigateTo('dashboard');
     } else {
       state.isLoggedIn = true; // Auto activate session if deep-linked
       navigateTo(hash);
@@ -214,7 +241,7 @@
 
   function handleLogout() {
     state.isLoggedIn = false;
-    window.location.hash = '#login';
+    window.location.href = '../ajax/auth/logout.php';
   }
 
   /**
@@ -778,6 +805,10 @@
   }
 
   // Bind global functions & initialize app on DOM load
-  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
 })();

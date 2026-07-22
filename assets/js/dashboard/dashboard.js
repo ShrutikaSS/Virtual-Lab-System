@@ -1578,6 +1578,10 @@
   // Bind global functions & initialize app on DOM load
   window.selectExpTab = selectExpTab;
   window.confirmLogout = confirmLogout;
-  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
 })();

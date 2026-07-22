@@ -13,14 +13,15 @@ if (empty($username) || empty($password) || empty($role)) {
 }
 
 $sql = "SELECT * FROM users
-        WHERE username = ?
+        WHERE (username = ? OR email = ?)
         AND role = ?";
 
 $stmt = mysqli_prepare($conn, $sql);
 
 mysqli_stmt_bind_param(
     $stmt,
-    "ss",
+    "sss",
+    $username,
     $username,
     $role
 );
@@ -29,21 +30,19 @@ mysqli_stmt_execute($stmt);
 
 $result = mysqli_stmt_get_result($stmt);
 
-if (mysqli_num_rows($result) === 1) {
+if ($result && mysqli_num_rows($result) === 1) {
 
     $user = mysqli_fetch_assoc($result);
 
     if (password_verify($password, $user['password'])) {
 
+        // Reset session array to ensure previous user data is cleared
+        $_SESSION = [];
+
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['full_name'] = $user['full_name'];
         $_SESSION['role'] = $user['role'];
-
-        if ($user['must_change_password'] == 1) {
-            header("Location: ../../change-password.php");
-            exit();
-        }
 
         if ($user['role'] === 'student') {
             header("Location: ../../student/dashboard.php");
@@ -57,12 +56,12 @@ if (mysqli_num_rows($result) === 1) {
 
     } else {
         header("Location: ../../login.php?error=invalid_password");
-  exit();
+        exit();
     }
 
 } else {
     header("Location: ../../login.php?error=invalid_credentials");
-exit();
+    exit();
 }
 
 ?>

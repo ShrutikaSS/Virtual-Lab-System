@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 include("../include/dbConfig.php");
 
@@ -6,34 +7,44 @@ $message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $full_name = trim($_POST['full_name']);
-    $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
+    $full_name = trim($_POST['full_name'] ?? '');
+    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-    // Hash the temporary password
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-    // Faculty role is fixed as 'faculty'
-    $sql = "INSERT INTO users
-            (full_name, username, email, password, role, must_change_password)
-            VALUES (?, ?, ?, ?, 'faculty', TRUE)";
-
-    $stmt = mysqli_prepare($conn, $sql);
-
-    mysqli_stmt_bind_param(
-        $stmt,
-        "ssss",
-        $full_name,
-        $username,
-        $email,
-        $hashedPassword
-    );
-
-    if (mysqli_stmt_execute($stmt)) {
-        $message = "Faculty account created successfully!";
+    if (empty($full_name) || empty($username) || empty($email) || empty($password)) {
+        $message = "Please fill in all required fields.";
     } else {
-        $message = "Error: Username or email may already exist.";
+        // Hash the temporary password
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        // Faculty role is fixed as 'faculty'
+        $sql = "INSERT INTO users
+                (full_name, username, email, password, role)
+                VALUES (?, ?, ?, ?, 'faculty')";
+
+        $stmt = mysqli_prepare($conn, $sql);
+
+        if ($stmt) {
+            mysqli_stmt_bind_param(
+                $stmt,
+                "ssss",
+                $full_name,
+                $username,
+                $email,
+                $hashedPassword
+            );
+
+            if (mysqli_stmt_execute($stmt)) {
+                $message = "Faculty account created successfully!";
+            } else {
+                $message = "Error: Username or email may already exist.";
+            }
+
+            mysqli_stmt_close($stmt);
+        } else {
+            $message = "Database error: Could not prepare query.";
+        }
     }
 }
 

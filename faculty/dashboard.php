@@ -1,3 +1,32 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'faculty') {
+    header("Location: ../login.php");
+    exit();
+}
+
+require_once '../include/dbConfig.php';
+
+$user_id = $_SESSION['user_id'];
+
+$sql = "SELECT * FROM users WHERE id = ? AND role = 'faculty'";
+$stmt = mysqli_prepare($conn, $sql);
+
+$faculty = null;
+if ($stmt) {
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $faculty = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+}
+
+if (!$faculty) {
+    header("Location: ../login.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,48 +45,8 @@
 </head>
 <body>
 
-<!-- Standalone Faculty Login Stage -->
-<div id="view-login" class="login-stage" style="display: flex;">
-  <div class="login-card">
-    <div class="logo-block" style="margin-bottom: 20px;">
-      <div class="logo-ring" aria-hidden="true" style="color: var(--ink);">
-        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3.5" opacity="0.6"/>
-          <circle cx="24" cy="24" r="17.5" stroke="currentColor" stroke-width="1" opacity="0.35"/>
-          <path d="M20.5 12.5 H27.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M22.5 12.5 V19 L16 30.5 a2.5 2.5 0 0 0 2.2 3.7 H29.8 a2.5 2.5 0 0 0 2.2 -3.7 L26 19 V12.5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M24 19 V24 H20" stroke="#F0B33E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="20" cy="24" r="2.2" fill="#F0B33E"/>
-          <path d="M24 24 V27.5 H28" stroke="#37B7A0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="28" cy="27.5" r="2" fill="#37B7A0"/>
-        </svg>
-      </div>
-      <div class="logo-text">
-        <span class="logo-name" style="color: var(--ink);">Vidyut Virtual Lab</span>
-        <span class="logo-sub">Faculty Console</span>
-      </div>
-    </div>
-
-    <p class="login-tag mono">ELEVATED CLEARANCE REQUIRED</p>
-    <h1 class="login-title">Faculty Portal Sign In</h1>
-    <p class="login-subtitle">Authenticate with your institutional faculty credentials to manage lab benches.</p>
-
-    <form onsubmit="event.preventDefault(); handleFacultyLogin();">
-      <div class="form-field">
-        <label>Faculty Email / ID</label>
-        <input type="text" placeholder="e.g. rajesh.sharma@institute.edu" required value="rajesh.sharma@institute.edu">
-      </div>
-      <div class="form-field">
-        <label>Password</label>
-        <input type="password" placeholder="••••••••••••" required value="password123">
-      </div>
-      <button class="btn-primary-action" type="submit">Log in to Faculty Console</button>
-    </form>
-  </div>
-</div>
-
 <!-- Main Faculty App Shell -->
-<div id="appShell" class="app-container" style="display: none;">
+<div id="appShell" class="app-container">
 
   <!-- LEFT SIDEBAR (236px, --blueprint Theme) -->
   <aside class="sidebar">
@@ -126,8 +115,8 @@
 
       <div class="top-bar-right">
         <div class="profile-chip" id="profileChip" role="button" tabIndex="0" aria-label="Open faculty profile">
-          <div class="avatar-initials">RS</div>
-          <span class="profile-chip-name">Dr. Rajesh Sharma</span>
+          <div class="avatar-initials" id="headerInitials"></div>
+          <span class="profile-chip-name" id="headerName"></span>
         </div>
         <button class="btn-logout-icon" id="logoutBtn" title="Log out from Faculty Console" aria-label="Log out">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -189,6 +178,10 @@
     </div>
   </div>
 </div>
+
+<script>
+    window.loggedInFaculty = <?php echo json_encode($faculty); ?>;
+</script>
 
 <!-- Client-side Faculty Console Application Script -->
 <script src="../assets/js/faculty/faculty.js"></script>

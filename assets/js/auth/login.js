@@ -73,6 +73,8 @@
     // Store selected role for PHP backend
     const roleField = document.getElementById('roleField');
     if (roleField) roleField.value = roleName;
+    const roleInput = document.getElementById('roleInput');
+    if (roleInput) roleInput.value = roleName;
 
     // Update dynamic CSS theme variables
     document.documentElement.style.setProperty('--accent', roleConfig.accent);
