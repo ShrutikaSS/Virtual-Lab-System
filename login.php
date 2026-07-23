@@ -129,7 +129,14 @@
       <p class="form-note" id="formNote">Use your institute email and roll number password to continue.</p>
  <?php
 $error = $_GET['error'] ?? '';
+$msg = $_GET['msg'] ?? '';
 ?>
+
+      <?php if (!empty($msg)): ?>
+      <p class="success-message" style="color: #2e7d32; background: rgba(46, 125, 50, 0.1); border: 1px solid rgba(46, 125, 50, 0.3); padding: 12px 15px; margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 13px;">
+        <?php echo htmlspecialchars($msg); ?>
+      </p>
+      <?php endif; ?>
 
       <?php if ($error === 'invalid_password'): ?>
       <p class="error-message">
@@ -182,7 +189,7 @@ $error = $_GET['error'] ?? '';
 
         <div class="row-between">
           <label class="check"><input type="checkbox"> Remember this device</label>
-          <a href="#">Forgot password?</a>
+          <a href="forgot_password.php?role=student" id="forgotPasswordLink">Forgot password?</a>
         </div>
 
         <button class="submit" type="submit" id="submitBtn">Enter lab</button>

@@ -75,6 +75,14 @@
     if (roleField) roleField.value = roleName;
     const roleInput = document.getElementById('roleInput');
     if (roleInput) roleInput.value = roleName;
+    // Update Forgot Password link according to selected role
+    const forgotPasswordLink =
+      document.getElementById('forgotPasswordLink');
+
+    if (forgotPasswordLink) {
+      forgotPasswordLink.href =
+        'forgot_password.php?role=' + roleName;
+    }
 
     // Update dynamic CSS theme variables
     document.documentElement.style.setProperty('--accent', roleConfig.accent);
