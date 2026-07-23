@@ -1,0 +1,169 @@
+/* ============================================================
+   HERO IMPACT ANIMATION-ONLY STYLES (hero-impact.css)
+   ============================================================ */
+
+/* 1. Animated Shifting Gradient Background */
+.hero-gradient-bg {
+  position: relative;
+  overflow: hidden;
+  /* Deep, vibrant science/space theme gradient */
+  background: linear-gradient(135deg, #0b132b, #121f42, #1a2f63, #0f363b, #121f42);
+  background-size: 300% 300%;
+  animation: shiftBackground 16s ease infinite;
+}
+
+@keyframes shiftBackground {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Full page fixed overlay particle canvas */
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none; /* Let all clicks pass through to content */
+  z-index: 9999; /* Float on top of all sections */
+}
+
+/* 2. Word-by-word Reveal Animations */
+.word-stagger {
+  display: inline-block;
+}
+
+.word-stagger .word-reveal {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(12px);
+  transform: translateY(16px) scale(0.92);
+  animation: focusWord 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes focusWord {
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 3. Glowing Highlight Sweep Underline */
+.highlight-sweep {
+  position: relative;
+  color: #37B7A0; /* Chemistry Teal */
+  text-shadow: 0 0 15px rgba(55, 183, 160, 0.45);
+  display: inline-block;
+}
+
+.highlight-sweep::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #37B7A0, #F0B33E);
+  box-shadow: 0 0 12px rgba(55, 183, 160, 0.9);
+  animation: sweepUnderline 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 1.1s; /* Trigger after main heading reveals */
+}
+
+@keyframes sweepUnderline {
+  to {
+    width: 100%;
+  }
+}
+
+/* 4. Pulsing CTA button Glow */
+.glow-wrap {
+  position: relative;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.glow-wrap::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  background: linear-gradient(90deg, #37B7A0, #F0B33E);
+  border-radius: 6px;
+  filter: blur(14px);
+  opacity: 0.5;
+  z-index: -1;
+  animation: pulseButtonGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseButtonGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.45;
+    filter: blur(12px);
+  }
+  50% {
+    transform: scale(1.06, 1.12);
+    opacity: 0.75;
+    filter: blur(16px);
+  }
+}
+
+/* 5. Bouncing Scroll-Down Cue */
+.scroll-cue {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: rgba(251, 250, 245, 0.75);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  z-index: 10;
+  animation: bounceCue 2s infinite;
+  transition: color 0.2s ease;
+}
+
+.scroll-cue:hover {
+  color: #37B7A0;
+}
+
+@keyframes bounceCue {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translate(-50%, 0);
+  }
+  40% {
+    transform: translate(-50%, -12px);
+  }
+  60% {
+    transform: translate(-50%, -6px);
+  }
+}
+
+/* Screen compatibility for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-gradient-bg {
+    animation: none;
+  }
+  .word-stagger .word-reveal {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .highlight-sweep::after {
+    width: 100%;
+    animation: none;
+  }
+  .glow-wrap::before {
+    animation: none;
+    opacity: 0.3;
+  }
+  .scroll-cue {
+    animation: none;
+  }
+}
