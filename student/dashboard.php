@@ -23,15 +23,26 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'student') {
     }
 }
 
-if (!$student) {
+if ($student) {
+    $student['full_name'] = $student['full_name'] ?? ($_SESSION['full_name'] ?? 'Student');
+    $student['email'] = $student['email'] ?? ($_SESSION['email'] ?? 'student@institute.edu');
+    $student['username'] = $student['username'] ?? ($_SESSION['username'] ?? '21AI045');
+    $student['roll_no'] = $student['roll_no'] ?? $student['username'];
+    $student['academic_program'] = $student['academic_program'] ?? 'Artificial Intelligence & Data Science';
+    $student['semester'] = $student['semester'] ?? 'Semester V';
+    $student['batch'] = $student['batch'] ?? 'CS-3B';
+    $student['phone'] = $student['phone'] ?? '+91 98765 43210';
+    $student['faculty_mentor'] = $student['faculty_mentor'] ?? 'Dr. Sunita Patil';
+} else {
     $student = [
-        'id' => 1,
-        'full_name' => 'Aarav Rao',
-        'roll_no' => '21AI045',
+        'id' => $_SESSION['user_id'] ?? 1,
+        'full_name' => $_SESSION['full_name'] ?? 'Aarav Rao',
+        'username' => $_SESSION['username'] ?? '21AI045',
+        'roll_no' => $_SESSION['username'] ?? '21AI045',
         'academic_program' => 'Artificial Intelligence & Data Science',
         'semester' => 'Semester V',
         'batch' => 'CS-3B',
-        'email' => 'aarav.rao@institute.edu',
+        'email' => $_SESSION['email'] ?? 'aarav.rao@institute.edu',
         'phone' => '+91 98765 43210',
         'faculty_mentor' => 'Dr. Sunita Patil'
     ];

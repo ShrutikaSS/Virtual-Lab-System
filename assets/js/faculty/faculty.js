@@ -182,6 +182,12 @@
         navigateTo(view);
       });
     });
+
+    // Top Bar Profile Chip Click
+    const profileChip = document.getElementById('profileChip');
+    if (profileChip) {
+      profileChip.addEventListener('click', () => navigateTo('profile'));
+    }
   }
 
   // Modal Overlays

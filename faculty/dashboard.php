@@ -23,12 +23,16 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'faculty') {
     }
 }
 
-if (!$faculty) {
+if ($faculty) {
+    $faculty['full_name'] = $faculty['full_name'] ?? ($_SESSION['full_name'] ?? 'Faculty Member');
+    $faculty['email'] = $faculty['email'] ?? ($_SESSION['email'] ?? 'faculty@vidyut.edu');
+    $faculty['username'] = $faculty['username'] ?? ($_SESSION['username'] ?? 'faculty');
+} else {
     $faculty = [
-        'id' => 1,
-        'full_name' => 'Dr. Sunita Patil',
-        'username' => 'sunita.patil',
-        'email' => 'sunita.patil@vidyut.edu',
+        'id' => $_SESSION['user_id'] ?? 1,
+        'full_name' => $_SESSION['full_name'] ?? 'Dr. Sunita Patil',
+        'username' => $_SESSION['username'] ?? 'sunita.patil',
+        'email' => $_SESSION['email'] ?? 'sunita.patil@vidyut.edu',
         'phone' => '+91 98765 01234',
         'department' => 'Department of Applied Sciences & Engineering',
         'designation' => 'Professor & Lab Director'

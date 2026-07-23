@@ -126,7 +126,7 @@
     <div class="form-wrap">
       <p class="form-eyebrow mono" id="formEyebrow">STUDENT ACCESS</p>
       <h2 class="form-title" id="formTitle">Sign in to your bench</h2>
-      <p class="form-note" id="formNote">Use your institute email and roll number password to continue.</p>
+      <p class="form-note" id="formNote">Use your username and password to continue.</p>
  <?php
 $error = $_GET['error'] ?? '';
 $msg = $_GET['msg'] ?? '';
@@ -151,19 +151,19 @@ $msg = $_GET['msg'] ?? '';
          <input type="hidden" name="role" id="roleField" value="student">
 
         <div class="field">
-          <label id="idLabel" for="idField">Email or roll number</label>
+          <label id="idLabel" for="idField">Username</label>
           <input 
   id="idField" 
   name="username"
   type="text" 
-  placeholder="e.g. 21ai045@institute.edu" 
+  placeholder="e.g. 21ai045 or sujal12" 
   required 
   autocomplete="username"
 >
         </div>
 
         <!-- Role specific extra details drawer -->
-        <div class="extra-field show" id="extraField">
+        <div class="extra-field" id="extraField">
           <div class="extra-field-inner">
             <div class="field">
               <label id="extraLabel" for="extraInput">Batch / course code</label>
