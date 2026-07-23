@@ -148,18 +148,18 @@
    */
   function handleAuthSubmit(e) {
     if (e) e.preventDefault();
+
     const activeRoleBtn = document.querySelector('.role-switch.active');
     const role = activeRoleBtn ? activeRoleBtn.dataset.role : 'student';
 
     if (role === 'faculty') {
       window.location.href = 'faculty/dashboard.php#dashboard';
     } else if (role === 'admin') {
-      alert('Administrator console access requires 2FA verification code.');
+      window.location.href = 'admin/dashboard.php';
     } else {
       window.location.href = 'student/dashboard.php';
     }
   }
-
   // Bind functions to window so inline onclick handlers in HTML continue working
   window.selectRole = selectRole;
   window.togglePass = togglePass;
