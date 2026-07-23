@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="ZealVirtual Science Lab — Administrator Dashboard for portal user management, subject oversight, faculty administration, content approval, and system telemetry.">
-  <title>Vidyut Virtual Lab — Administrator Dashboard</title>
+  <title>Zeal Virtual Lab — Administrator Dashboard</title>
 
   <!-- Google Fonts matching Student & Faculty dashboards -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,6 +13,8 @@
 
   <!-- Admin Dashboard Stylesheet -->
   <link rel="stylesheet" href="../assets/css/admin/admin.css">
+  <!-- Custom Animations & Cursor -->
+  <link rel="stylesheet" href="../animations.css">
 </head>
 <body>
 
@@ -33,7 +35,7 @@
         </svg>
       </div>
       <div class="logo-text">
-        <span class="logo-name" style="color: var(--ink);">Vidyut Virtual Lab</span>
+        <span class="logo-name" style="color: var(--ink);">Zeal Virtual Lab</span>
         <span class="logo-sub">Admin Portal</span>
       </div>
     </div>
@@ -76,7 +78,7 @@
           </svg>
         </div>
         <div class="logo-text">
-          <span class="logo-name">Vidyut Virtual Lab</span>
+          <span class="logo-name">Zeal Virtual Lab</span>
           <span class="logo-sub">Admin Portal</span>
         </div>
       </a>
@@ -344,6 +346,8 @@
   </div>
 </div>
 
+<!-- Custom Animations & Cursor -->
+<script src="../animations.js"></script>
 <!-- Client-side Admin Dashboard Application Script -->
 <script src="../assets/js/admin/admin.js"></script>
 

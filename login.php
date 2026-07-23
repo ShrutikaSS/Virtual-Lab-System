@@ -13,6 +13,8 @@
 
   <!-- Unified Theme Stylesheet -->
   <link rel="stylesheet" href="assets/css/auth/login.css">
+  <!-- Custom Animations & Cursor -->
+  <link rel="stylesheet" href="animations.css">
 </head>
 <body>
 
@@ -202,6 +204,8 @@ $error = $_GET['error'] ?? '';
 
 </div>
 
+<!-- Custom Animations & Cursor -->
+<script src="animations.js"></script>
 <!-- Interactive Client-side Script -->
 <script src="assets/js/auth/login.js"></script>
 

@@ -55,6 +55,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <head>
     <title>Create Faculty Account</title>
+    <!-- Custom Animations & Cursor -->
+    <link rel="stylesheet" href="../animations.css">
 </head>
 
 <body>
@@ -95,6 +97,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 </form>
 
+<!-- Custom Animations & Cursor -->
+<script src="../animations.js"></script>
 </body>
 
 </html>
