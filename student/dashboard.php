@@ -23,6 +23,20 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'student') {
     }
 }
 
+$broadcasts = [];
+if (isset($conn) && $conn) {
+    try {
+        $res = mysqli_query($conn, "SELECT * FROM broadcasts ORDER BY created_at DESC LIMIT 20");
+        if ($res) {
+            while ($row = mysqli_fetch_assoc($res)) {
+                $broadcasts[] = $row;
+            }
+        }
+    } catch (Exception $e) {
+        // Suppress
+    }
+}
+
 if ($student) {
     $student['full_name'] = $student['full_name'] ?? ($_SESSION['full_name'] ?? 'Student');
     $student['email'] = $student['email'] ?? ($_SESSION['email'] ?? 'student@institute.edu');
@@ -65,6 +79,95 @@ if ($student) {
   <link rel="stylesheet" href="../assets/css/dashboard/dashboard.css">
   <!-- Custom Animations & Cursor -->
   <link rel="stylesheet" href="../animations.css">
+  <style>
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+    }
+    .btn-notif-bell {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(21, 42, 80, 0.05);
+      color: var(--ink);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-notif-bell:hover {
+      background: rgba(21, 42, 80, 0.1);
+    }
+    .notif-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: var(--bad, #D9634C);
+      color: var(--white, #FBFAF5);
+      border-radius: 50%;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      font-weight: bold;
+      border: 1.5px solid var(--paper, #F5F2E9);
+    }
+    .notif-dropdown-panel {
+      position: absolute;
+      top: 45px;
+      right: 0;
+      width: 320px;
+      background: var(--paper);
+      border: 1px solid rgba(21, 42, 80, 0.15);
+      border-radius: var(--r-md);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      text-align: left;
+      display: none;
+    }
+    .notif-dropdown-panel.active {
+      display: block;
+    }
+    .notif-header {
+      padding: 10px 14px;
+      background: var(--paper-dim);
+      border-bottom: 1px solid rgba(21, 42, 80, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .notif-list {
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .notif-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(21, 42, 80, 0.06);
+      font-size: 0.82rem;
+      color: var(--ink);
+    }
+    .notif-item:last-child {
+      border-bottom: none;
+    }
+    .notif-item strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 2px;
+    }
+    .notif-item .notif-meta {
+      font-size: 0.72rem;
+      color: var(--ink-soft);
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
 </head>
 <body>
 
@@ -131,10 +234,32 @@ if ($student) {
         <span class="breadcrumb-crumb active">Dashboard</span>
       </nav>
 
-      <div class="profile-chip" id="profileChip" role="button" tabIndex="0" aria-label="Open student profile">
-    <div class="avatar-initials" id="headerInitials"></div>
-    <span class="profile-chip-name" id="headerName"></span>
-</div>
+      <div class="top-bar-right">
+        <!-- Notification Bell -->
+        <button class="btn-notif-bell" title="System Notifications" aria-label="Notifications" onclick="toggleNotifDropdown()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="notif-badge" id="notifBadge" style="display: none;">0</span>
+        </button>
+
+        <!-- Notification Panel Dropdown -->
+        <div id="notifDropdownPanel" class="notif-dropdown-panel">
+          <div class="notif-header">
+            <span>System Announcements</span>
+            <span class="mono" id="notifCountTag" style="font-size: 0.75rem; color: var(--bad);">0 New</span>
+          </div>
+          <div id="notifList" class="notif-list">
+            <!-- Dynamic notifications -->
+          </div>
+        </div>
+
+        <div class="profile-chip" id="profileChip" role="button" tabIndex="0" aria-label="Open student profile" style="margin-left: 0;">
+          <div class="avatar-initials" id="headerInitials"></div>
+          <span class="profile-chip-name" id="headerName"></span>
+        </div>
+      </div>
     </header>
 
     <!-- Dynamic View Containers -->
@@ -160,6 +285,7 @@ if ($student) {
 
 <script>
     window.loggedInStudent = <?php echo json_encode($student); ?>;
+    window.serverBroadcasts = <?php echo json_encode($broadcasts); ?>;
 </script>
 
 <!-- Custom Animations & Cursor -->

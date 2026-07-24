@@ -23,6 +23,27 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'admin') {
     }
 }
 
+$broadcasts = [];
+$users_list = [];
+if (isset($conn) && $conn) {
+    try {
+        $res = mysqli_query($conn, "SELECT * FROM broadcasts ORDER BY created_at DESC LIMIT 20");
+        if ($res) {
+            while ($row = mysqli_fetch_assoc($res)) {
+                $broadcasts[] = $row;
+            }
+        }
+        $res2 = mysqli_query($conn, "SELECT id, full_name, username, email, role, created_at FROM users ORDER BY id DESC");
+        if ($res2) {
+            while ($row = mysqli_fetch_assoc($res2)) {
+                $users_list[] = $row;
+            }
+        }
+    } catch (Exception $e) {
+        // Suppress errors
+    }
+}
+
 if ($admin) {
     $admin['full_name'] = $admin['full_name'] ?? ($_SESSION['full_name'] ?? 'Administrator');
     $admin['email'] = $admin['email'] ?? ($_SESSION['email'] ?? 'admin@vidyut.edu');
@@ -362,6 +383,8 @@ $admin_initials = substr($initials, 0, 2) ?: 'AD';
     email: <?php echo json_encode($admin['email']); ?>,
     username: <?php echo json_encode($admin['username']); ?>
   };
+  window.serverBroadcasts = <?php echo json_encode($broadcasts); ?>;
+  window.serverUsers = <?php echo json_encode($users_list); ?>;
 </script>
 <!-- Client-side Admin Dashboard Application Script -->
 <script src="../assets/js/admin/admin.js"></script>

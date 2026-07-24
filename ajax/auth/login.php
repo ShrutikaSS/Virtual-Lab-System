@@ -36,7 +36,7 @@ if ($result && mysqli_num_rows($result) === 1) {
 
     if (password_verify($password, $user['password'])) {
 
-        // Reset session array to ensure previous user data is cleared
+    // Reset session array to ensure previous user data is cleared
         $_SESSION = [];
 
         $_SESSION['user_id'] = $user['id'];

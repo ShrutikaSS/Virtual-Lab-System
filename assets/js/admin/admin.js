@@ -73,6 +73,48 @@
     currentView: 'dashboard'
   };
 
+  // Sync state with server-side DB data
+  if (window.serverBroadcasts) {
+    state.notifications = window.serverBroadcasts.map(b => ({
+      id: `notif-${b.id}`,
+      message: b.message,
+      audience: b.audience,
+      sentAt: b.created_at,
+      sender: b.sender,
+      status: 'delivered'
+    }));
+  }
+
+  if (window.serverUsers) {
+    const dbStudents = window.serverUsers.filter(u => u.role === 'student');
+    if (dbStudents.length > 0) {
+      state.users = dbStudents.map(u => ({
+        id: `usr-${u.id}`,
+        name: u.full_name,
+        roll: u.username || `STU-${u.id}`,
+        program: 'B.Tech AI&DS',
+        batch: '2022-26',
+        status: 'active',
+        lastLogin: 'Active'
+      }));
+    }
+
+    const dbFaculty = window.serverUsers.filter(u => u.role === 'faculty');
+    if (dbFaculty.length > 0) {
+      state.faculty = dbFaculty.map(f => ({
+        id: `fac-${f.id}`,
+        name: f.full_name,
+        facultyId: f.username || `FAC-${f.id}`,
+        department: 'Applied Sciences',
+        designation: 'Faculty Member',
+        subjects: ['Virtual Lab'],
+        status: 'active',
+        publishedCount: 5,
+        rating: '4.8/5'
+      }));
+    }
+  }
+
   // Auth Handling
   window.handleAdminLogin = function () {
     const loginStage = document.getElementById('view-login');
@@ -86,12 +128,7 @@
 
   window.handleAdminLogout = function () {
     if (confirm('Are you sure you want to log out of the Administrator Portal?')) {
-      const loginStage = document.getElementById('view-login');
-      const appShell = document.getElementById('appShell');
-      if (loginStage && appShell) {
-        appShell.style.display = 'none';
-        loginStage.style.display = 'flex';
-      }
+      window.location.href = '../ajax/auth/logout.php';
     }
   };
 
@@ -282,7 +319,7 @@
       <div class="stats-grid">
         <div class="stat-card chem">
           <div class="stat-label">Total Registered Students</div>
-          <div class="stat-value">${state.users.length * 178}</div>
+          <div class="stat-value">${state.users.length}</div>
         </div>
         <div class="stat-card physics">
           <div class="stat-label">Active Faculty Accounts</div>
@@ -778,16 +815,37 @@
     const target = document.getElementById('notifTarget')?.value;
     if (!msg) return alert('Enter notification message.');
 
-    state.notifications.unshift({
-      id: `notif-${Date.now()}`,
-      message: msg,
-      audience: target,
-      sentAt: 'Just now',
-      sender: state.admin.name,
-      status: 'delivered'
+    const formData = new FormData();
+    formData.append('message', msg);
+    formData.append('audience', target);
+
+    fetch('../ajax/broadcast.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        state.notifications.unshift({
+          id: `notif-${data.broadcast.id}`,
+          message: data.broadcast.message,
+          audience: data.broadcast.audience,
+          sentAt: 'Just now',
+          sender: data.broadcast.sender,
+          status: 'delivered'
+        });
+        alert('Broadcast sent successfully!');
+        const textEl = document.getElementById('notifMsg');
+        if (textEl) textEl.value = '';
+        renderNotificationsView();
+      } else {
+        alert('Error: ' + (data.error || 'Failed to send broadcast'));
+      }
+    })
+    .catch(e => {
+      console.error(e);
+      alert('Error sending broadcast');
     });
-    alert('Broadcast sent successfully!');
-    renderNotificationsView();
   };
 
   // 8. Render Reports View

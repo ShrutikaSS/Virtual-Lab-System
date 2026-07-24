@@ -23,6 +23,27 @@ if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'faculty') {
     }
 }
 
+$broadcasts = [];
+$students_list = [];
+if (isset($conn) && $conn) {
+    try {
+        $res = mysqli_query($conn, "SELECT * FROM broadcasts ORDER BY created_at DESC LIMIT 20");
+        if ($res) {
+            while ($row = mysqli_fetch_assoc($res)) {
+                $broadcasts[] = $row;
+            }
+        }
+        $res2 = mysqli_query($conn, "SELECT id, full_name, username, email, role, created_at FROM users WHERE role = 'student' ORDER BY id DESC");
+        if ($res2) {
+            while ($row = mysqli_fetch_assoc($res2)) {
+                $students_list[] = $row;
+            }
+        }
+    } catch (Exception $e) {
+        // Suppress errors
+    }
+}
+
 if ($faculty) {
     $faculty['full_name'] = $faculty['full_name'] ?? ($_SESSION['full_name'] ?? 'Faculty Member');
     $faculty['email'] = $faculty['email'] ?? ($_SESSION['email'] ?? 'faculty@vidyut.edu');
@@ -226,6 +247,8 @@ if ($faculty) {
 <script src="../animations.js"></script>
 <script>
     window.loggedInFaculty = <?php echo json_encode($faculty); ?>;
+    window.serverBroadcasts = <?php echo json_encode($broadcasts); ?>;
+    window.serverStudents = <?php echo json_encode($students_list); ?>;
 </script>
 <!-- Client-side Faculty Console Application Script -->
 <script src="../assets/js/faculty/faculty.js"></script>
