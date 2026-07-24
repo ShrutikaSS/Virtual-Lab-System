@@ -43,13 +43,13 @@
         tag: 'CHEMISTRY',
         color: '#37B7A0',
         desc: 'Acid-base titrations, chemical kinetics, buffer solutions, and volumetric measurement.',
-        total: 5,
-        completed: 4,
+        total: 7,
+        completed: 5,
         experiments: [
           {
             id: 'ch-01',
             tag: 'CH·01',
-            title: 'Acid–Base Titration & Equivalence Point',
+            title: 'Acid-Base Titration & Equivalence Point',
             desc: 'Determine the molar concentration of an unknown hydrochloric acid solution using standardized sodium hydroxide.',
             status: 'completed',
             progress: 100,
@@ -91,48 +91,22 @@
           {
             id: 'ch-02',
             tag: 'CH·02',
-            title: 'pH Metric Kinetics & Buffer Solutions',
-            desc: 'Measure pH changes upon incremental addition of acid/base to phosphate buffer systems.',
-            status: 'in-progress',
-            progress: 60,
-            theory: {
-              intro: 'Buffer solutions resist drastic changes in pH upon the addition of small amounts of strong acid or base. The Henderson-Hasselbalch equation governs buffer behavior.',
-              objectives: [
-                'Analyze buffer capacity of weak acid and conjugate base pairs.',
-                'Plot pH vs volume of added titrant curves.'
-              ],
-              keyFormula: 'pH = pK_a + \\log\\left(\\frac{[A^-]}{[HA]}\\right)'
-            },
-            apparatus: [
-              { name: 'Digital pH Meter with Glass Electrode', qty: '1 unit' },
-              { name: 'Phosphate Buffer Solution (pH 7.0)', qty: '150 mL' },
-              { name: '0.1 M HCl Solution', qty: '50 mL' }
-            ],
-            sim: { type: 'titration' },
-            quiz: [
-              {
-                question: 'Which equation expresses the relationship between pH, pKa, and buffer component concentrations?',
-                options: ['Nernst Equation', 'Henderson-Hasselbalch Equation', 'Arrhenius Equation', 'Beer-Lambert Law'],
-                correctIndex: 1
-              }
-            ]
-          },
-          {
-            id: 'ch-03',
-            tag: 'CH·03',
-            title: 'Flame Photometry & Alkali Metal Analysis',
-            desc: 'Identify sodium and potassium emission spectra wavelengths using atomic flame spectrophotometry.',
+            title: 'Flame Test for Metal Ion Identification',
+            desc: 'Observe characteristic atomic emission spectrum flame colors to identify unknown metal cations.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'Flame photometry measures light emission intensity from excited alkali metal atoms when introduced into a high-temperature flame.',
-              objectives: ['Observe Na and K flame emission colors.', 'Determine concentration via linear calibration.'],
-              keyFormula: 'I = K \\times C^b'
+              intro: 'Flame tests detect metal ions based on their characteristic flame colors when electrons transition back to ground state.',
+              objectives: [
+                'Observe Li, Na, K, Ca, Cu, Ba flame colors.',
+                'Identify unknown metal salt samples.'
+              ],
+              keyFormula: 'E = \\frac{h c}{\\lambda}'
             },
             apparatus: [
-              { name: 'Digital Flame Photometer', qty: '1 unit' },
-              { name: 'Air Compressor & Propane Supply', qty: '1 set' },
-              { name: 'NaCl & KCl Standard Solutions', qty: '1 set' }
+              { name: 'Bunsen Burner Rig', qty: '1 unit' },
+              { name: 'Platinum Wire Loop', qty: '1 unit' },
+              { name: 'Salt Samples A-F', qty: '1 set' }
             ],
             sim: { type: 'titration' },
             quiz: [
@@ -144,47 +118,53 @@
             ]
           },
           {
-            id: 'ch-04',
-            tag: 'CH·04',
-            title: 'Viscosity & Surface Tension of Pure Liquids',
-            desc: 'Measure efflux time using Ostwald viscometer and stalagmometer to determine relative viscosity and surface tension.',
+            id: 'ch-03',
+            tag: 'CH·03',
+            title: 'pH Scale and Indicator Testing',
+            desc: 'Measure the pH of common household acids and bases using universal indicator strips and digital meters.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'Viscosity measures a fluid’s resistance to gradual deformation by shear stress, governed by Poiseuille’s law.',
-              objectives: ['Measure flow time using Ostwald viscometer.', 'Calculate relative viscosity using fluid density ratios.'],
-              keyFormula: '\\frac{\\eta_1}{\\eta_2} = \\frac{\\rho_1 t_1}{\\rho_2 t_2}'
+              intro: 'The pH scale measures the hydrogen ion concentration in solutions, classifying them as acidic, neutral, or basic.',
+              objectives: [
+                'Observe indicator color changes across pH 0-14.',
+                'Classify solutions as strong/weak acids or bases.'
+              ],
+              keyFormula: 'pH = -\\log[H^+]'
             },
             apparatus: [
-              { name: 'Ostwald Viscometer', qty: '1 unit' },
-              { name: 'Stalagmometer', qty: '1 unit' },
-              { name: 'Constant Temperature Water Bath', qty: '1 unit' }
+              { name: 'Digital pH Meter', qty: '1 unit' },
+              { name: 'Universal Indicator Strips', qty: '1 pack' },
+              { name: 'Household Solutions Shelf', qty: '1 set' }
             ],
             sim: { type: 'titration' },
             quiz: [
               {
-                question: 'How does the viscosity of a liquid typically change as temperature increases?',
-                options: ['Viscosity increases', 'Viscosity decreases', 'Viscosity remains constant', 'Viscosity drops to zero'],
+                question: 'Which equation expresses the relationship between pH, pKa, and buffer component concentrations?',
+                options: ['Nernst Equation', 'Henderson-Hasselbalch Equation', 'Arrhenius Equation', 'Beer-Lambert Law'],
                 correctIndex: 1
               }
             ]
           },
           {
-            id: 'ch-05',
-            tag: 'CH·05',
-            title: 'Chemical Kinetics & Reaction Order',
-            desc: 'Determine reaction rate constant k and reaction order for acid-catalyzed ester hydrolysis.',
+            id: 'ch-04',
+            tag: 'CH·04',
+            title: 'Rate of Reaction – Effect of Concentration/Temperature',
+            desc: 'Measure reaction rate changes between Sodium Thiosulfate and Hydrochloric Acid under different temperatures.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'Chemical kinetics studies reaction rates and mechanisms under varying concentration and temperature conditions.',
-              objectives: ['Determine rate constant k for pseudo first-order hydrolysis.', 'Calculate activation energy Ea.'],
-              keyFormula: 'k = \\frac{2.303}{t} \\log\\left(\\frac{V_\\infty - V_0}{V_\\infty - V_t}\\right)'
+              intro: 'Reaction rates increase with concentration and temperature due to higher collision frequencies between molecules.',
+              objectives: [
+                'Measure reaction speed via cloudiness times.',
+                'Verify collision theory relationships.'
+              ],
+              keyFormula: 'Rate = \\frac{1}{\\text{Time}}'
             },
             apparatus: [
-              { name: 'Methyl Acetate Solution', qty: '50 mL' },
-              { name: '0.5 M HCl Catalyst Solution', qty: '100 mL' },
-              { name: 'Ice Water Bath', qty: '1 unit' }
+              { name: 'Glass Beakers', qty: '3 units' },
+              { name: 'Water Bath Heater', qty: '1 unit' },
+              { name: 'X-Marked Paper', qty: '1 sheet' }
             ],
             sim: { type: 'titration' },
             quiz: [
@@ -192,6 +172,93 @@
                 question: 'In acid-catalyzed hydrolysis of methyl acetate, what is the order of reaction with respect to ester?',
                 options: ['Zero order', 'Pseudo first-order', 'Second order', 'Third order'],
                 correctIndex: 1
+              }
+            ]
+          },
+          {
+            id: 'ch-05',
+            tag: 'CH·05',
+            title: 'Electrolysis of Water & Mole Ratios',
+            desc: 'Decompose water into hydrogen and oxygen gases using electrical current to verify Faraday\'s laws.',
+            status: 'completed',
+            progress: 100,
+            theory: {
+              intro: 'Electrolysis uses electric current to drive a non-spontaneous chemical decomposition reaction in water.',
+              objectives: [
+                'Verify 2:1 mole ratio of Hydrogen to Oxygen.',
+                'Analyze redox reactions at cathode and anode.'
+              ],
+              keyFormula: '2H_2O \\rightarrow 2H_2 + O_2'
+            },
+            apparatus: [
+              { name: 'Hoffman Voltameter', qty: '1 set' },
+              { name: 'DC Power Source (12V)', qty: '1 unit' },
+              { name: 'Acidified Water Electrolyte', qty: '200 mL' }
+            ],
+            sim: { type: 'titration' },
+            quiz: [
+              {
+                question: 'During the electrolysis of water, at which electrode is hydrogen gas released?',
+                options: ['Cathode', 'Anode', 'Both electrodes', 'Neither electrode'],
+                correctIndex: 0
+              }
+            ]
+          },
+          {
+            id: 'ch-06',
+            tag: 'CH·06',
+            title: 'Qualitative Salt Analysis',
+            desc: 'Perform cation and anion wet tests using laboratory reagents to identify unknown inorganic compounds.',
+            status: 'in-progress',
+            progress: 40,
+            theory: {
+              intro: 'Qualitative analysis involves testing a salt systematically with inorganic reagents to identify its constituent ions.',
+              objectives: [
+                'Narrows down ions using systematic tests.',
+                'Perform confirmatory cation and anion tests.'
+              ],
+              keyFormula: '\\text{Salt} \\rightarrow \\text{Cation} + \\text{Anion}'
+            },
+            apparatus: [
+              { name: 'Test Tube Rack & Tubes', qty: '1 set' },
+              { name: 'Reagent Bottles Shelf', qty: '1 set' },
+              { name: 'Unknown Salt Samples', qty: '1 set' }
+            ],
+            sim: { type: 'titration' },
+            quiz: [
+              {
+                question: 'Which of the following precipitates is formed when sodium hydroxide is added to a copper sulfate solution?',
+                options: ['White precipitate', 'Light blue precipitate', 'Reddish-brown precipitate', 'Dirty green precipitate'],
+                correctIndex: 1
+              }
+            ]
+          },
+          {
+            id: 'ch-07',
+            tag: 'CH·07',
+            title: 'Standard Solution Preparation',
+            desc: 'Weigh solute, prepare standard molar solutions, and perform serial dilutions using volumetric flasks.',
+            status: 'not-started',
+            progress: 0,
+            theory: {
+              intro: 'A standard solution has a precisely known concentration, prepared by dissolving a known mass of solute in a fixed volume.',
+              objectives: [
+                'Weigh compounds on digital balance precisely.',
+                'Perform serial dilution calculations using C1V1 = C2V2.'
+              ],
+              keyFormula: 'C_1 V_1 = C_2 V_2'
+            },
+            apparatus: [
+              { name: 'Digital Balance', qty: '1 unit' },
+              { name: 'Volumetric Flasks', qty: '3 units' },
+              { name: 'Solute Compound Salts', qty: '1 set' }
+            ],
+            sim: { type: 'titration' },
+            quiz: [
+              {
+                question: 'What volume of 12 M HCl is required to prepare 500 mL of 1.0 M HCl?',
+                options: ['41.7 mL', '50.0 mL', '83.3 mL', '120.0 mL'],
+                correctIndex: 0
               }
             ]
           }
@@ -203,29 +270,28 @@
         tag: 'PHYSICS',
         color: '#9C8CF0',
         desc: 'Simple harmonic pendulum motion, projectile kinematics, optical diffraction, and wave mechanics.',
-        total: 5,
-        completed: 4,
+        total: 7,
+        completed: 5,
         experiments: [
           {
             id: 'phy-01',
             tag: 'PH·01',
-            title: 'Simple Pendulum & Gravitational Acceleration',
+            title: 'Simple Pendulum – Time Period vs Length',
             desc: 'Investigate the period of a simple pendulum as a function of string length L to calculate local acceleration due to gravity g.',
-            status: 'in-progress',
-            progress: 75,
+            status: 'completed',
+            progress: 100,
             theory: {
-              intro: 'A simple pendulum consists of a point mass suspended from a frictionless pivot by an inextensible string. Under small angular displacement, the bob undergoes simple harmonic motion.',
+              intro: 'A simple pendulum consists of a point mass suspended from a fixed support by an inextensible string. Under small angular displacement, it undergoes simple harmonic motion with period T depending on L and g.',
               objectives: [
                 'Verify the relationship between pendulum period T and string length L.',
-                'Calculate local gravitational acceleration g from T² vs L linear slope.'
+                'Calculate local gravitational acceleration g from T² vs L.'
               ],
               keyFormula: 'T = 2 \\pi \\sqrt{\\frac{L}{g}}'
             },
             apparatus: [
               { name: 'Brass Pendulum Bob (50g)', qty: '1 unit' },
               { name: 'Inextensible Thread', qty: '1.5 meters' },
-              { name: 'Precision Digital Stopwatch', qty: '1 unit' },
-              { name: 'Vertical Meter Scale', qty: '1 unit' }
+              { name: 'Precision Digital Stopwatch', qty: '1 unit' }
             ],
             sim: { type: 'pendulum' },
             quiz: [
@@ -244,22 +310,50 @@
           {
             id: 'phy-02',
             tag: 'PH·02',
-            title: 'Projectile Motion Kinematics',
-            desc: 'Analyze launch velocity and launch angle relationships to measure total horizontal range R and maximum height H.',
+            title: 'Ohm\'s Law Verification',
+            desc: 'Verify the linear relationship between voltage and current across a fixed resistor.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'Projectile motion is two-dimensional motion under constant gravitational acceleration g. The horizontal motion has constant velocity, while vertical motion undergoes free fall.',
+              intro: 'Ohm\'s Law states that the current through a conductor between two points is directly proportional to the voltage across the two points and inversely proportional to resistance.',
               objectives: [
-                'Measure range R and peak height H for launch angles between 15° and 75°.',
-                'Verify maximum horizontal range occurs at 45° launch angle.'
+                'Verify linear V-I relationship across fixed resistors.',
+                'Calculate resistance R = V/I.'
               ],
-              keyFormula: 'Range = \\frac{v^2 \\sin(2\\theta)}{g}, \\quad H_{max} = \\frac{(v \\sin\\theta)^2}{2g}'
+              keyFormula: 'I = \\frac{V}{R}'
+            },
+            apparatus: [
+              { name: 'Regulated DC Power Supply (0-30V)', qty: '1 unit' },
+              { name: 'Digital Multimeter', qty: '2 units' },
+              { name: 'Fixed Resistors', qty: '1 set' }
+            ],
+            sim: { type: 'ohms' },
+            quiz: [
+              {
+                question: 'If voltage across a 20 Ω resistor is increased from 10 V to 20 V, what happens to the current?',
+                options: ['Current doubles from 0.5 A to 1.0 A', 'Current halves to 0.25 A', 'Current quadruples', 'Current remains unchanged'],
+                correctIndex: 0
+              }
+            ]
+          },
+          {
+            id: 'phy-03',
+            tag: 'PH·03',
+            title: 'Projectile Motion Kinematics',
+            desc: 'Analyze launch velocity and angle relationships to measure total horizontal range and maximum flight height.',
+            status: 'completed',
+            progress: 100,
+            theory: {
+              intro: 'Projectile motion is a form of motion experienced by an object projected into the air, moving under the constant acceleration of gravity.',
+              objectives: [
+                'Analyze launch velocity and launch angle relationships.',
+                'Calculate Range, Max Height, and Flight Time.'
+              ],
+              keyFormula: 'Range = \\frac{v^2 \\sin(2\\theta)}{g}'
             },
             apparatus: [
               { name: 'Ballistic Spring Launcher', qty: '1 unit' },
               { name: 'Photogate Speed Sensor', qty: '2 units' },
-              { name: 'Carbon Impact Paper Target', qty: '1 sheet' },
               { name: 'Digital Angle Protractor', qty: '1 unit' }
             ],
             sim: { type: 'projectile' },
@@ -268,89 +362,122 @@
                 question: 'At what launch angle θ does a projectile achieve maximum horizontal range R in vacuum?',
                 options: ['30°', '45°', '60°', '90°'],
                 correctIndex: 1
-              },
-              {
-                question: 'Complementary launch angles (e.g. 30° and 60°) with identical initial velocity yield:',
-                options: ['Equal maximum height', 'Equal horizontal range', 'Equal time of flight', 'Zero velocity at impact'],
-                correctIndex: 1
-              }
-            ]
-          },
-          {
-            id: 'phy-03',
-            tag: 'PH·03',
-            title: 'Newton’s Rings & Light Wavelength',
-            desc: 'Observe interference fringe patterns between a plano-convex lens and glass plate to measure sodium light wavelength λ.',
-            status: 'completed',
-            progress: 100,
-            theory: {
-              intro: 'Newton’s rings are concentric circular interference fringes formed by thin air film thickness variations between a spherical and flat optical surface.',
-              objectives: ['Measure ring diameters using travelling microscope.', 'Calculate sodium light wavelength λ.'],
-              keyFormula: '\\lambda = \\frac{D_{n+m}^2 - D_n^2}{4m R}'
-            },
-            apparatus: [
-              { name: 'Plano-Convex Lens (R=100cm)', qty: '1 unit' },
-              { name: 'Sodium Vapor Lamp (589 nm)', qty: '1 unit' },
-              { name: 'Travelling Microscope (0.01mm resolution)', qty: '1 unit' }
-            ],
-            sim: { type: 'pendulum' },
-            quiz: [
-              {
-                question: 'Why is the central spot of Newton’s rings pattern dark in reflected light?',
-                options: ['Zero path difference', 'Phase shift of π upon reflection at denser medium', 'Complete absorption', 'Refraction loss'],
-                correctIndex: 1
               }
             ]
           },
           {
             id: 'phy-04',
             tag: 'PH·04',
-            title: 'Semiconductor Energy Band Gap',
-            desc: 'Measure reverse saturation current across a PN junction diode as a function of temperature to determine band gap Eg.',
+            title: 'Young\'s Double Slit interference',
+            desc: 'Study wave interference of light through double slits to measure fringe width.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'The energy band gap Eg is the energy difference between top of valence band and bottom of conduction band in semiconductors.',
-              objectives: ['Record diode reverse current vs temperature.', 'Calculate Eg from ln(I0) vs 1000/T slope.'],
-              keyFormula: 'I_0 = B \\cdot T^3 \\exp\\left(-\\frac{E_g}{k T}\\right)'
+              intro: 'Young\'s Double Slit experiment demonstrates the wave nature of light via constructive and destructive interference patterns formed on a screen.',
+              objectives: [
+                'Observe bright and dark interference bands.',
+                'Calculate fringe width β as a function of wavelength, slit distance, and screen distance.'
+              ],
+              keyFormula: '\\beta = \\frac{\\lambda D}{d}'
             },
             apparatus: [
-              { name: 'Germanium / Silicon Diode Kit', qty: '1 unit' },
-              { name: 'Micro-Oven with Temperature Control', qty: '1 unit' },
-              { name: 'Micro-Ammeter & Thermocouple', qty: '1 unit' }
+              { name: 'Monochromatic Laser Source', qty: '1 unit' },
+              { name: 'Double Slit Slide', qty: '1 unit' },
+              { name: 'Viewing Screen & Draggable Ruler', qty: '1 unit' }
             ],
             sim: { type: 'pendulum' },
             quiz: [
               {
-                question: 'What is the typical energy band gap value Eg for Germanium (Ge) at room temperature?',
-                options: ['0.72 eV', '1.12 eV', '1.43 eV', '3.00 eV'],
-                correctIndex: 0
+                question: 'Why is the central spot of Newton’s rings or double slit pattern dark in reflected light?',
+                options: ['Zero path difference', 'Phase shift of π upon reflection at denser medium', 'Complete absorption', 'Refraction loss'],
+                correctIndex: 1
               }
             ]
           },
           {
             id: 'phy-05',
             tag: 'PH·05',
-            title: 'Torsional Pendulum & Modulus of Rigidity',
-            desc: 'Measure torsional oscillation periods for metallic wires to calculate rigidity modulus η.',
+            title: 'Series and Parallel Combination of Resistors',
+            desc: 'Assemble resistors in series and parallel connection to verify equivalent resistance formulas.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'A torsional pendulum consists of a rigid body suspended by a wire which executes rotational simple harmonic motion when twisted.',
-              objectives: ['Measure period of torsional oscillation.', 'Calculate wire rigidity modulus η.'],
-              keyFormula: '\\eta = \\frac{8 \\pi I L}{T^2 r^4}'
+              intro: 'The equivalent resistance of series combinations is the sum of resistances, while for parallel it is the reciprocal sum.',
+              objectives: [
+                'Verify series and parallel equivalent resistance formulas.',
+                'Analyze current and voltage division rules.'
+              ],
+              keyFormula: 'R_{series} = R_1 + R_2, \\quad R_{parallel} = \\frac{R_1 R_2}{R_1 + R_2}'
             },
             apparatus: [
-              { name: 'Torsional Pendulum Rig', qty: '1 unit' },
-              { name: 'Steel Wire Samples', qty: '1 set' },
-              { name: 'Screw Gauge & Vernier Callipers', qty: '1 set' }
+              { name: 'DC Supply', qty: '1 unit' },
+              { name: 'Multimeters', qty: '2 units' },
+              { name: 'Resistor kit', qty: '1 set' }
+            ],
+            sim: { type: 'ohms' },
+            quiz: [
+              {
+                question: 'What is the equivalent resistance of two 100 Ω resistors connected in parallel?',
+                options: ['200 Ω', '100 Ω', '50 Ω', '25 Ω'],
+                correctIndex: 2
+              }
+            ]
+          },
+          {
+            id: 'phy-06',
+            tag: 'PH·06',
+            title: 'Inclined Plane – Newton\'s Second Law',
+            desc: 'Analyze the forces acting on a block sliding down an inclined plane with adjustable angle and friction.',
+            status: 'in-progress',
+            progress: 50,
+            theory: {
+              intro: 'Newton\'s second law describes the motion of an object down an incline under the influence of gravity and friction forces.',
+              objectives: [
+                'Measure block acceleration down an inclined plane.',
+                'Verify friction coefficient relationships.'
+              ],
+              keyFormula: 'a = g(\\sin\\theta - \\mu\\cos\\theta)'
+            },
+            apparatus: [
+              { name: 'Adjustable Incline Bench', qty: '1 unit' },
+              { name: 'Sliding Wooden Blocks', qty: '1 set' },
+              { name: 'Mass Weights', qty: '1 set' }
+            ],
+            sim: { type: 'projectile' },
+            quiz: [
+              {
+                question: 'A block slides down an incline. If the slope angle increases, the normal force:',
+                options: ['Increases', 'Decreases', 'Remains the same', 'Becomes zero'],
+                correctIndex: 1
+              }
+            ]
+          },
+          {
+            id: 'phy-07',
+            tag: 'PH·07',
+            title: 'Melde\'s Experiment — Standing Waves',
+            desc: 'Verify standing wave resonance conditions on a stretched string using adjustable frequency and tension.',
+            status: 'not-started',
+            progress: 0,
+            theory: {
+              intro: 'Standing waves are formed by the interference of two traveling waves of the same frequency and amplitude moving in opposite directions.',
+              objectives: [
+                'Observe resonance loops on a stretched string.',
+                'Calculate wave speed and verify frequency relations.'
+              ],
+              keyFormula: 'v = \\sqrt{\\frac{T}{\\mu}}, \\quad f = \\frac{n v}{2L}'
+            },
+            apparatus: [
+              { name: 'Electromagnetic Tuning Fork', qty: '1 unit' },
+              { name: 'Step Pulley & Hanging Weights', qty: '1 set' },
+              { name: 'Inextensible Fine Thread', qty: '1 unit' }
             ],
             sim: { type: 'pendulum' },
             quiz: [
               {
-                question: 'Modulus of rigidity η represents a material’s resistance to:',
-                options: ['Volume compression', 'Shearing / Torsional deformation', 'Linear stretching', 'Thermal expansion'],
-                correctIndex: 1
+                question: 'In standing waves, the points of zero amplitude are called:',
+                options: ['Nodes', 'Antinodes', 'Harmonics', 'Resonances'],
+                correctIndex: 0
               }
             ]
           }
@@ -362,66 +489,63 @@
         tag: 'ELECTRICAL',
         color: '#F0B33E',
         desc: 'Ohm’s law, Kirchhoff’s circuit laws, series/parallel resistor networks, and AC frequency response.',
-        total: 5,
-        completed: 4,
+        total: 7,
+        completed: 5,
         experiments: [
           {
             id: 'ee-01',
             tag: 'EE·01',
-            title: 'Ohm’s Law & Series–Parallel Resistor Networks',
-            desc: 'Verify voltage-current proportionality and measure equivalent resistance in series and parallel circuit configurations.',
+            title: 'Kirchhoff\'s Circuit Laws (KVL & KCL)',
+            desc: 'Verify that node current sums and loop voltage drops equal zero in a multi-loop DC network.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'Ohm’s law states that current I through a conductor between two points is directly proportional to voltage V across the two points and inversely proportional to resistance R.',
+              intro: 'Kirchhoff\'s laws govern conservation of charge (KCL) and energy (KVL) inside electrical circuit networks.',
               objectives: [
-                'Verify linear V-I relationship across fixed resistors.',
-                'Calculate equivalent resistance R_eq for series and parallel networks.'
+                'Verify loop voltage drops sum to zero.',
+                'Verify node currents sum to zero.'
               ],
-              keyFormula: 'I = \\frac{V}{R}, \\quad R_{series} = R_1 + R_2, \\quad R_{parallel} = \\frac{R_1 R_2}{R_1 + R_2}'
+              keyFormula: '\\sum V = 0, \\quad \\sum I = 0'
             },
             apparatus: [
-              { name: 'Regulated DC Power Supply (0-30V)', qty: '1 unit' },
-              { name: 'Digital Multimeter (Voltage/Current)', qty: '2 units' },
-              { name: 'Precision Resistors (100Ω, 220Ω, 470Ω)', qty: '1 set' },
-              { name: 'Breadboard & Jumper Wires', qty: '1 set' }
+              { name: 'DC Volt Sources', qty: '2 units' },
+              { name: 'Ammeters & Voltmeters', qty: '3 units' },
+              { name: 'Resistor Network Panel', qty: '1 unit' }
             ],
             sim: { type: 'ohms' },
             quiz: [
               {
-                question: 'What is the equivalent resistance of two 100 Ω resistors connected in parallel?',
-                options: ['200 Ω', '100 Ω', '50 Ω', '25 Ω'],
+                question: 'According to Kirchhoff\'s Current Law (KCL), the algebraic sum of currents entering a node is:',
+                options: ['Infinity', 'Dependent on resistance', 'Zero', 'Equal to loop voltage'],
                 correctIndex: 2
-              },
-              {
-                question: 'If voltage across a 20 Ω resistor is increased from 10 V to 20 V, what happens to the current?',
-                options: ['Current doubles from 0.5 A to 1.0 A', 'Current halves to 0.25 A', 'Current quadruples', 'Current remains unchanged'],
-                correctIndex: 0
               }
             ]
           },
           {
             id: 'ee-02',
             tag: 'EE·02',
-            title: 'Kirchhoff’s Voltage & Current Laws (KVL/KCL)',
-            desc: 'Verify algebraic sum of voltages around closed loops and currents at node junctions in multi-loop circuits.',
+            title: 'Series RLC Circuit Resonance',
+            desc: 'Sweep AC source frequency to find the resonant peak where inductive and capacitive reactances cancel.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'Kirchhoff’s Current Law (KCL) states total current entering a node equals total current leaving. Kirchhoff’s Voltage Law (KVL) states directed sum of potential differences around any closed loop is zero.',
-              objectives: ['Verify KCL node current balance.', 'Verify KVL loop voltage conservation.'],
-              keyFormula: '\\sum I_{node} = 0, \\quad \\sum V_{loop} = 0'
+              intro: 'In RLC circuits, resonance occurs when inductive reactance equals capacitive reactance, minimizing impedance.',
+              objectives: [
+                'Measure resonant frequency peak.',
+                'Calculate circuit Q-factor and bandwidth.'
+              ],
+              keyFormula: 'f_0 = \\frac{1}{2 \\pi \\sqrt{L C}}'
             },
             apparatus: [
-              { name: 'Dual Tracking DC Power Supply', qty: '1 unit' },
-              { name: 'Resistor Network Board', qty: '1 unit' },
-              { name: 'Digital Ammeters', qty: '3 units' }
+              { name: 'AC Signal Generator', qty: '1 unit' },
+              { name: 'Resistor, Inductor, Capacitor', qty: '1 set' },
+              { name: 'Dual Trace Oscilloscope', qty: '1 unit' }
             ],
             sim: { type: 'ohms' },
             quiz: [
               {
-                question: 'Kirchhoff’s Current Law (KCL) is a direct consequence of the conservation of:',
-                options: ['Energy', 'Electric Charge', 'Linear Momentum', 'Magnetic Flux'],
+                question: 'At resonant frequency of a series RLC circuit, the circuit impedance is:',
+                options: ['Maximum and purely reactive', 'Minimum and purely resistive', 'Zero', 'Infinite'],
                 correctIndex: 1
               }
             ]
@@ -429,25 +553,28 @@
           {
             id: 'ee-03',
             tag: 'EE·03',
-            title: 'RLC Series Resonance & Quality Factor',
-            desc: 'Investigate frequency response of RLC circuits to measure resonant frequency fr and circuit quality factor Q.',
+            title: 'Transformer OC & SC Core Tests',
+            desc: 'Perform open-circuit and short-circuit tests to measure core iron losses and winding copper losses.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'In an RLC series circuit, resonance occurs when inductive reactance XL equals capacitive reactance XC, causing circuit impedance to reach minimum R.',
-              objectives: ['Determine resonant frequency fr.', 'Plot current vs frequency response curve and calculate Q factor.'],
-              keyFormula: 'f_r = \\frac{1}{2 \\pi \\sqrt{L C}}, \\quad Q = \\frac{1}{R} \\sqrt{\\frac{L}{C}}'
+              intro: 'Open circuit tests measure core loss parameters, while short circuit tests measure equivalent winding resistance.',
+              objectives: [
+                'Determine transformer core losses (iron loss).',
+                'Determine equivalent winding copper resistance.'
+              ],
+              keyFormula: 'P_{core} = V_{oc} I_{oc} \\cos\\phi, \\quad P_{cu} = I_{sc}^2 R_{eq}'
             },
             apparatus: [
-              { name: 'Function Generator (1Hz - 1MHz)', qty: '1 unit' },
-              { name: 'Inductor (10mH), Capacitor (0.1µF), Resistor (100Ω)', qty: '1 set' },
-              { name: 'Dual Channel Oscilloscope', qty: '1 unit' }
+              { name: 'Single-Phase Transformer', qty: '1 unit' },
+              { name: 'Wattmeter & Variac AC Supply', qty: '1 set' },
+              { name: 'Voltmeters & Ammeters', qty: '2 units' }
             ],
             sim: { type: 'ohms' },
             quiz: [
               {
-                question: 'At series resonance in an RLC circuit, the net impedance Z of the circuit is equal to:',
-                options: ['Zero', 'Purely resistance R', 'Purely inductive XL', 'Infinite'],
+                question: 'The open circuit test on a single-phase transformer is primarily performed to find:',
+                options: ['Copper losses', 'Core / Iron losses', 'Friction losses', 'Total efficiency'],
                 correctIndex: 1
               }
             ]
@@ -455,25 +582,28 @@
           {
             id: 'ee-04',
             tag: 'EE·04',
-            title: 'Single-Phase Transformer OC & SC Tests',
-            desc: 'Perform open-circuit and short-circuit tests to determine core losses, copper losses, and equivalent circuit parameters.',
+            title: 'DC Motor Torque-Speed Curves',
+            desc: 'Apply mechanical load torque to DC shunt and series motors to plot speed-torque and speed-current profiles.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'Open-circuit test yields core losses (hysteresis and eddy current), while short-circuit test yields full-load copper losses and winding impedances.',
-              objectives: ['Calculate core loss resistance Rc and magnetizing reactance Xm.', 'Determine transformer efficiency at full load.'],
-              keyFormula: '\\eta = \\frac{V_2 I_2 \\cos\\phi}{V_2 I_2 \\cos\\phi + P_{core} + P_{cu}} \\times 100\\%'
+              intro: 'DC motors develop torque proportional to armature current, causing speed drops under loading.',
+              objectives: [
+                'Plot torque vs speed curves for shunt and series motors.',
+                'Verify speed regulation properties.'
+              ],
+              keyFormula: 'N = \\frac{V - I_a R_a}{K \\Phi}'
             },
             apparatus: [
-              { name: '1 kVA 230V/115V Single-Phase Transformer', qty: '1 unit' },
-              { name: 'Single-Phase Auto-Transformer (Variac)', qty: '1 unit' },
-              { name: 'Low Power Factor Wattmeters', qty: '2 units' }
+              { name: 'DC Shunt & Series Motor Rig', qty: '1 unit' },
+              { name: 'Mechanical Brake Dynamometer', qty: '1 unit' },
+              { name: 'Armature DC Supply', qty: '1 unit' }
             ],
             sim: { type: 'ohms' },
             quiz: [
               {
-                question: 'Why is the Open-Circuit (OC) test conducted at rated voltage on the low-voltage side?',
-                options: ['To measure copper losses', 'To measure core losses safely at low voltage', 'To test insulation breakdown', 'To check mechanical vibration'],
+                question: 'Weakening the main magnetic field flux Φ in a DC shunt motor causes the motor speed N to:',
+                options: ['Decrease', 'Increase above rated speed', 'Drop to zero', 'Reverse rotation direction'],
                 correctIndex: 1
               }
             ]
@@ -481,25 +611,86 @@
           {
             id: 'ee-05',
             tag: 'EE·05',
-            title: 'DC Shunt Motor Speed Control & Torque',
-            desc: 'Control DC motor speed via armature voltage control and field flux weakening, plotting torque-speed curves.',
+            title: 'AC Circuits & Power Factor',
+            desc: 'Measure active, reactive, and apparent power in AC loads to analyze power factor and correction capacitor banks.',
             status: 'completed',
             progress: 100,
             theory: {
-              intro: 'DC motor speed N is directly proportional to back EMF Eb and inversely proportional to main field flux Φ.',
-              objectives: ['Plot N vs armature voltage V.', 'Plot N vs field current If for flux weakening control.'],
-              keyFormula: 'N = k \\cdot \\frac{V - I_a R_a}{\\Phi}'
+              intro: 'Power factor represents the ratio of real power to apparent power, indicating phase lag between voltage and current.',
+              objectives: [
+                'Measure phase shift between voltage and current waves.',
+                'Perform power factor correction using parallel capacitors.'
+              ],
+              keyFormula: '\\text{PF} = \\cos\\theta = \\frac{P}{S}'
             },
             apparatus: [
-              { name: '220V DC Shunt Motor Rig', qty: '1 unit' },
-              { name: 'Field & Armature Rheostats', qty: '2 units' },
-              { name: 'Optical Non-Contact Tachometer', qty: '1 unit' }
+              { name: 'AC Wattmeter', qty: '1 unit' },
+              { name: 'Inductive Load & Capacitor Bank', qty: '1 set' },
+              { name: 'Phasor Volt/Amp Meters', qty: '1 set' }
             ],
             sim: { type: 'ohms' },
             quiz: [
               {
-                question: 'Weakening the main magnetic field flux Φ in a DC shunt motor causes the motor speed N to:',
-                options: ['Decrease', 'Increase above rated speed', 'Drop to zero', 'Reverse rotation direction'],
+                question: 'What component is commonly connected in parallel to an inductive load to improve its power factor?',
+                options: ['Resistor', 'Inductor', 'Capacitor', 'Diode'],
+                correctIndex: 2
+              }
+            ]
+          },
+          {
+            id: 'ee-06',
+            tag: 'EE·06',
+            title: 'Three-Phase Star-Delta connections',
+            desc: 'Verify line and phase voltage/current relations under balanced three-phase star and delta connections.',
+            status: 'in-progress',
+            progress: 60,
+            theory: {
+              intro: 'Balanced three-phase networks distribute power using line and phase values shifted by 120 degrees.',
+              objectives: [
+                'Verify star voltage relation VL = √3 Vph.',
+                'Verify delta current relation IL = √3 Iph.'
+              ],
+              keyFormula: 'P = \\sqrt{3} V_L I_L \\cos\\phi'
+            },
+            apparatus: [
+              { name: '3-Phase AC Supply Panel', qty: '1 unit' },
+              { name: 'Balanced Resistive Load Bank', qty: '1 unit' },
+              { name: 'Multi-Phase Meters', qty: '1 set' }
+            ],
+            sim: { type: 'ohms' },
+            quiz: [
+              {
+                question: 'In a balanced Star (Y) connection, what is the mathematical relation between line voltage VL and phase voltage Vph?',
+                options: ['VL = Vph', 'VL = √3 * Vph', 'VL = Vph / √3', 'VL = 3 * Vph'],
+                correctIndex: 1
+              }
+            ]
+          },
+          {
+            id: 'ee-07',
+            tag: 'EE·07',
+            title: 'Insulation & Earth Resistance Tests',
+            desc: 'Use a high-voltage Megger to check cable insulation health and perform ground potential measurements.',
+            status: 'not-started',
+            progress: 0,
+            theory: {
+              intro: 'Earth resistance testing ensures low-resistance grounding paths for system safety, while Meggers test insulation leaks.',
+              objectives: [
+                'Verify insulation resistance using virtual Megger.',
+                'Measure earth ground resistance using fall-of-potential test.'
+              ],
+              keyFormula: 'R = \\frac{V_{test}}{I_{leak}}'
+            },
+            apparatus: [
+              { name: 'Virtual High-Voltage Megger', qty: '1 unit' },
+              { name: 'Ground Spikes & Earth Rod', qty: '1 set' },
+              { name: 'Soil Resistivity Tester', qty: '1 unit' }
+            ],
+            sim: { type: 'ohms' },
+            quiz: [
+              {
+                question: 'What instrument is primarily used to measure high insulation resistance?',
+                options: ['Multimeter', 'Megger', 'Voltmeter', 'Galvanometer'],
                 correctIndex: 1
               }
             ]
@@ -1502,7 +1693,18 @@
     const trials = state.trials[expId];
     const tbody = document.getElementById('trialLogBody');
 
-    if (expId.startsWith('ch-')) {
+    let exp = null;
+    for (const subKey in appData.subjects) {
+      const found = appData.subjects[subKey].experiments.find(e => e.id === expId);
+      if (found) {
+        exp = found;
+        break;
+      }
+    }
+
+    const simType = exp ? exp.sim.type : '';
+
+    if (simType === 'titration') {
       const v = document.getElementById('titrantSlider').value;
       const ph = document.getElementById('phVal').textContent;
       const color = parseFloat(v) >= 25 ? 'Teal / Pink' : 'Colorless';
@@ -1517,7 +1719,7 @@
           <td><span class="status-pill completed mono">Valid</span></td>
         </tr>
       `).join('');
-    } else if (expId === 'phy-01' || expId.startsWith('phy-03') || expId.startsWith('phy-04') || expId.startsWith('phy-05')) {
+    } else if (simType === 'pendulum') {
       const L = document.getElementById('lengthSlider').value;
       const T = document.getElementById('periodVal').textContent;
       const f = document.getElementById('freqVal').textContent;
@@ -1532,7 +1734,7 @@
           <td>9.81 m/s²</td>
         </tr>
       `).join('');
-    } else if (expId === 'phy-02') {
+    } else if (simType === 'projectile') {
       const v = document.getElementById('velSlider').value;
       const angle = document.getElementById('angleSlider').value;
       const R = document.getElementById('rangeVal').textContent;
@@ -1550,7 +1752,7 @@
           <td>${tr.t}</td>
         </tr>
       `).join('');
-    } else if (expId.startsWith('ee-')) {
+    } else if (simType === 'ohms') {
       const V = document.getElementById('voltSlider').value;
       const config = document.getElementById('configSelect').value;
       const Req = document.getElementById('reqVal').textContent;

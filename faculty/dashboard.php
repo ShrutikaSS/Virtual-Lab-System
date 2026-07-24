@@ -139,12 +139,6 @@ if (!$faculty) {
       </div>
     </header>
 
-    <!-- Top Bar Breadcrumbs -->
-    <div class="top-bar">
-      <nav class="breadcrumb" id="breadcrumbContainer" aria-label="Breadcrumb navigation">
-        <span class="breadcrumb-crumb active">Dashboard</span>
-      </nav>
-    </div>
 
     <!-- Dynamic View Containers -->
     <main class="content-area">
