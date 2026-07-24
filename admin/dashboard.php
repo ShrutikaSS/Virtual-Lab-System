@@ -1,3 +1,72 @@
+<?php
+session_start();
+
+$admin = null;
+
+if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'admin') {
+    try {
+        @include_once '../include/dbConfig.php';
+        if (isset($conn) && $conn) {
+            $user_id = $_SESSION['user_id'];
+            $sql = "SELECT * FROM users WHERE id = ? AND role = 'admin'";
+            $stmt = mysqli_prepare($conn, $sql);
+            if ($stmt) {
+                mysqli_stmt_bind_param($stmt, "i", $user_id);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+                $admin = mysqli_fetch_assoc($result);
+                mysqli_stmt_close($stmt);
+            }
+        }
+    } catch (Exception $e) {
+        // Fall back to session or mock admin
+    }
+}
+
+$broadcasts = [];
+$users_list = [];
+if (isset($conn) && $conn) {
+    try {
+        $res = mysqli_query($conn, "SELECT * FROM broadcasts ORDER BY created_at DESC LIMIT 20");
+        if ($res) {
+            while ($row = mysqli_fetch_assoc($res)) {
+                $broadcasts[] = $row;
+            }
+        }
+        $res2 = mysqli_query($conn, "SELECT id, full_name, username, email, role, created_at FROM users ORDER BY id DESC");
+        if ($res2) {
+            while ($row = mysqli_fetch_assoc($res2)) {
+                $users_list[] = $row;
+            }
+        }
+    } catch (Exception $e) {
+        // Suppress errors
+    }
+}
+
+if ($admin) {
+    $admin['full_name'] = $admin['full_name'] ?? ($_SESSION['full_name'] ?? 'Administrator');
+    $admin['email'] = $admin['email'] ?? ($_SESSION['email'] ?? 'admin@vidyut.edu');
+    $admin['username'] = $admin['username'] ?? ($_SESSION['username'] ?? 'admin');
+} else {
+    $admin = [
+        'id' => $_SESSION['user_id'] ?? 1,
+        'full_name' => $_SESSION['full_name'] ?? 'Dr. Sunita Patil',
+        'username' => $_SESSION['username'] ?? 'admin',
+        'email' => $_SESSION['email'] ?? 'sunita.patil@vidyut.edu'
+    ];
+}
+
+// Generate initials from full name
+$words = explode(' ', trim($admin['full_name']));
+$initials = '';
+foreach ($words as $w) {
+    if (!empty($w)) {
+        $initials .= strtoupper($w[0]);
+    }
+}
+$admin_initials = substr($initials, 0, 2) ?: 'AD';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,48 +87,8 @@
 </head>
 <body>
 
-<!-- Standalone Administrator Login Stage -->
-<div id="view-login" class="login-stage" style="display: flex;">
-  <div class="login-card">
-    <div class="logo-block" style="margin-bottom: 20px;">
-      <div class="logo-ring" aria-hidden="true" style="color: var(--ink);">
-        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3.5" opacity="0.6"/>
-          <circle cx="24" cy="24" r="17.5" stroke="currentColor" stroke-width="1" opacity="0.35"/>
-          <path d="M20.5 12.5 H27.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M22.5 12.5 V19 L16 30.5 a2.5 2.5 0 0 0 2.2 3.7 H29.8 a2.5 2.5 0 0 0 2.2 -3.7 L26 19 V12.5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M24 19 V24 H20" stroke="#F0B33E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="20" cy="24" r="2.2" fill="#F0B33E"/>
-          <path d="M24 24 V27.5 H28" stroke="#37B7A0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="28" cy="27.5" r="2" fill="#37B7A0"/>
-        </svg>
-      </div>
-      <div class="logo-text">
-        <span class="logo-name" style="color: var(--ink);">Zeal Virtual Lab</span>
-        <span class="logo-sub">Admin Portal</span>
-      </div>
-    </div>
-
-    <p class="login-tag mono">ELEVATED CLEARANCE REQUIRED</p>
-    <h1 class="login-title">Administrator Sign In</h1>
-    <p class="login-subtitle">Authenticate with root clearance credentials to access portal management telemetry.</p>
-
-    <form onsubmit="event.preventDefault(); handleAdminLogin();">
-      <div class="form-field">
-        <label>Admin Email / Username</label>
-        <input type="text" placeholder="e.g. sunita.patil@vidyut.edu" required value="sunita.patil@vidyut.edu">
-      </div>
-      <div class="form-field">
-        <label>Password</label>
-        <input type="password" placeholder="••••••••••••" required value="adminpassword123">
-      </div>
-      <button class="btn-primary-action" type="submit">Log in to Admin Portal</button>
-    </form>
-  </div>
-</div>
-
 <!-- Main Admin App Shell -->
-<div id="appShell" class="app-container" style="display: none;">
+<div id="appShell" class="app-container" style="display: flex;">
 
   <!-- LEFT SIDEBAR (236px, --blueprint Theme) -->
   <aside class="sidebar">
@@ -214,8 +243,8 @@
 
         <!-- User Profile Chip with Dropdown -->
         <div class="header-user-chip" onclick="toggleProfileDropdown()">
-          <div class="avatar-initials">SP</div>
-          <span class="profile-chip-name" style="font-size:0.85rem; color:var(--white);">Dr. Sunita Patil</span>
+          <div class="avatar-initials"><?php echo htmlspecialchars($admin_initials); ?></div>
+          <span class="profile-chip-name" style="font-size:0.85rem; color:var(--white);"><?php echo htmlspecialchars($admin['full_name']); ?></span>
           
           <!-- Profile Menu Dropdown -->
           <div id="profileDropdownPanel" class="profile-dropdown-panel">
@@ -346,8 +375,17 @@
   </div>
 </div>
 
-<!-- Custom Animations & Cursor -->
-<script src="../animations.js"></script>
+<!-- Inject server-side admin data -->
+<script>
+  window.SERVER_ADMIN = {
+    name: <?php echo json_encode($admin['full_name']); ?>,
+    initials: <?php echo json_encode($admin_initials); ?>,
+    email: <?php echo json_encode($admin['email']); ?>,
+    username: <?php echo json_encode($admin['username']); ?>
+  };
+  window.serverBroadcasts = <?php echo json_encode($broadcasts); ?>;
+  window.serverUsers = <?php echo json_encode($users_list); ?>;
+</script>
 <!-- Client-side Admin Dashboard Application Script -->
 <script src="../assets/js/admin/admin.js"></script>
 

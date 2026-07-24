@@ -15,10 +15,10 @@
       note: 'Select a clearance level, then sign in with your credentials. Each level unlocks a different set of instruments.',
       eyebrow: 'STUDENT ACCESS',
       title: 'Sign in to your bench',
-      formNote: 'Use your institute email and roll number password to continue.',
-      idLabel: 'Email or roll number',
-      idPlaceholder: 'e.g. 21ai045@institute.edu',
-      showExtra: true,
+      formNote: 'Use your username and password to continue.',
+      idLabel: 'Username',
+      idPlaceholder: 'e.g. 21ai045 or sujal12',
+      showExtra: false,
       extraLabel: 'Batch / course code',
       extraPlaceholder: 'e.g. CS-3B',
       submit: 'Enter lab',
@@ -34,7 +34,7 @@
       formNote: 'Use your faculty ID and institutional password to continue.',
       idLabel: 'Faculty ID or email',
       idPlaceholder: 'e.g. faculty.rao@institute.edu',
-      showExtra: true,
+      showExtra: false,
       extraLabel: 'Department',
       extraPlaceholder: 'e.g. Electronics & Comm.',
       submit: 'Enter console',
@@ -148,18 +148,18 @@
    */
   function handleAuthSubmit(e) {
     if (e) e.preventDefault();
+
     const activeRoleBtn = document.querySelector('.role-switch.active');
     const role = activeRoleBtn ? activeRoleBtn.dataset.role : 'student';
 
     if (role === 'faculty') {
       window.location.href = 'faculty/dashboard.php#dashboard';
     } else if (role === 'admin') {
-      alert('Administrator console access requires 2FA verification code.');
+      window.location.href = 'admin/dashboard.php';
     } else {
       window.location.href = 'student/dashboard.php';
     }
   }
-
   // Bind functions to window so inline onclick handlers in HTML continue working
   window.selectRole = selectRole;
   window.togglePass = togglePass;
@@ -173,8 +173,6 @@
 
     // Initial role activation
     selectRole('student');
-    const extraField = document.getElementById('extraField');
-    if (extraField) extraField.classList.add('show');
   });
 
 })();

@@ -108,6 +108,31 @@
     appData.faculty.designation = fData.designation || 'Faculty Member & Lab Instructor';
   }
 
+  // Load real data if available from PHP
+  if (window.serverBroadcasts) {
+    appData.notifications = window.serverBroadcasts.map(b => ({
+      id: `n-${b.id}`,
+      message: b.message,
+      audience: b.audience,
+      sentAt: b.created_at,
+      status: 'Delivered'
+    }));
+  }
+
+  if (window.serverStudents) {
+    appData.studentsSummary = window.serverStudents.map(s => ({
+      name: s.full_name,
+      roll: s.username || `STU-${s.id}`,
+      batch: 'CS-3B',
+      subject: 'Physics Lab',
+      expCompleted: 3,
+      avgScore: 85,
+      hoursLogged: 12.5,
+      lastActive: 'Active'
+    }));
+    appData.faculty.stats.studentsEnrolled = appData.studentsSummary.length;
+  }
+
   // State Engine
   const state = {
     isLoggedIn: true,
@@ -182,6 +207,12 @@
         navigateTo(view);
       });
     });
+
+    // Top Bar Profile Chip Click
+    const profileChip = document.getElementById('profileChip');
+    if (profileChip) {
+      profileChip.addEventListener('click', () => navigateTo('profile'));
+    }
   }
 
   // Modal Overlays
@@ -1306,16 +1337,36 @@
       audience = `Student Roll: ${roll}`;
     }
 
-    appData.notifications.unshift({
-      id: `n-${Date.now()}`,
-      message: msg,
-      audience: audience,
-      sentAt: 'Just now',
-      status: 'Delivered'
-    });
+    const formData = new FormData();
+    formData.append('message', msg);
+    formData.append('audience', audience);
 
-    alert('Notification broadcast successfully delivered!');
-    renderNotificationsView();
+    fetch('../ajax/broadcast.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        appData.notifications.unshift({
+          id: `n-${data.broadcast.id}`,
+          message: data.broadcast.message,
+          audience: data.broadcast.audience,
+          sentAt: 'Just now',
+          status: 'Delivered'
+        });
+        alert('Notification broadcast successfully delivered!');
+        const textEl = document.getElementById('notifMsg');
+        if (textEl) textEl.value = '';
+        renderNotificationsView();
+      } else {
+        alert('Error: ' + (data.error || 'Failed to send broadcast'));
+      }
+    })
+    .catch(e => {
+      console.error(e);
+      alert('Error sending broadcast');
+    });
   };
 
   /**

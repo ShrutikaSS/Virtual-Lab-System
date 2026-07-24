@@ -771,14 +771,55 @@
       }
     });
 
-    // Populate mobile notifications
-    const mobileNotifsList = document.getElementById('mobileNotifsList');
-    if (mobileNotifsList) {
-      mobileNotifsList.innerHTML = `
-        <div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><strong>CH·01 titration manual</strong> updated</div>
-        <div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);"><strong>First-year records</strong> due soon</div>
-        <div style="padding:4px 0;"><strong>Ohm's Law Quiz</strong> now open</div>
-      `;
+    // Populate notifications
+    renderStudentNotifications();
+  }
+
+  function renderStudentNotifications() {
+    const list = window.serverBroadcasts || [];
+    const notifListEl = document.getElementById('notifList');
+    const badgeEl = document.getElementById('notifBadge');
+    const tagEl = document.getElementById('notifCountTag');
+    const mobileListEl = document.getElementById('mobileNotifsList');
+
+    if (badgeEl) {
+      if (list.length > 0) {
+        badgeEl.textContent = list.length;
+        badgeEl.style.display = 'flex';
+      } else {
+        badgeEl.style.display = 'none';
+      }
+    }
+
+    if (tagEl) {
+      tagEl.textContent = `${list.length} Msg`;
+    }
+
+    const html = list.length > 0 ? list.map(n => `
+      <div class="notif-item">
+        <strong>${n.sender}</strong>
+        <div>${n.message}</div>
+        <div class="notif-meta">
+          <span class="mono" style="font-size: 0.65rem;">To: ${n.audience}</span>
+          <span style="font-size: 0.65rem;">${n.created_at}</span>
+        </div>
+      </div>
+    `).join('') : '<div style="padding: 14px; text-align: center; color: var(--ink-soft); font-size: 0.8rem;">No announcements yet.</div>';
+
+    if (notifListEl) {
+      notifListEl.innerHTML = html;
+    }
+
+    if (mobileListEl) {
+      if (list.length > 0) {
+        mobileListEl.innerHTML = list.slice(0, 3).map(n => `
+          <div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <strong>${n.sender}:</strong> ${n.message}
+          </div>
+        `).join('');
+      } else {
+        mobileListEl.innerHTML = '<div style="padding:4px 0; color:rgba(255,255,255,0.4);">No announcements.</div>';
+      }
     }
   }
 
@@ -1089,6 +1130,28 @@
           <div class="stat-label mono">Hours in Lab</div>
           <div class="stat-value">${s.stats.hoursLogged}h</div>
         </div>
+      </div>
+
+      <!-- Announcements & Broadcasts -->
+      <h2 class="section-title">Announcements & Broadcasts</h2>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        ${(window.serverBroadcasts && window.serverBroadcasts.length > 0) ? 
+          window.serverBroadcasts.map(b => `
+            <div class="continue-card" style="border-left: 4px solid var(--chem); padding: 16px; background: var(--paper-dim); border-radius: var(--r-md); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+              <div>
+                <div class="continue-tag-row" style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
+                  <span class="tag-pill mono" style="background: rgba(240, 179, 62, 0.15); color: var(--electrical); font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;">${b.sender}</span>
+                  <span class="status-pill completed mono" style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px;">${b.created_at}</span>
+                </div>
+                <h4 style="margin: 0; font-family: var(--font-body); font-weight: normal; font-size: 0.95rem; color: var(--ink);">${b.message}</h4>
+              </div>
+            </div>
+          `).join('') : `
+            <div class="continue-card" style="padding: 16px; background: var(--paper-dim); border-radius: var(--r-md);">
+              <p style="color: var(--ink-soft); font-size: 0.9rem; margin: 0;">No active announcements from faculty or admin.</p>
+            </div>
+          `
+        }
       </div>
 
       <!-- Subject Selection (3 Large Cards) -->
