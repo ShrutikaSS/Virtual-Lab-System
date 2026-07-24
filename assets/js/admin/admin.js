@@ -9,10 +9,10 @@
   // State Management Data Model
   const state = {
     admin: {
-      name: 'Dr. Sunita Patil',
-      initials: 'SP',
+      name: (window.SERVER_ADMIN && window.SERVER_ADMIN.name) || 'Dr. Sunita Patil',
+      initials: (window.SERVER_ADMIN && window.SERVER_ADMIN.initials) || 'SP',
       adminId: 'ADM-9042',
-      email: 'sunita.patil@vidyut.edu',
+      email: (window.SERVER_ADMIN && window.SERVER_ADMIN.email) || 'sunita.patil@vidyut.edu',
       role: 'System Administrator'
     },
     users: [
