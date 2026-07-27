@@ -21,23 +21,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $username = trim($_POST['username']);
         $email = trim($_POST['email']);
         $password = $_POST['password'];
+        $batch = trim($_POST['batch'] ?? 'CS-3B');
+        $subject = trim($_POST['subject'] ?? 'Physics Lab');
 
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         $sql = "INSERT INTO users
-                (full_name, username, email, password, role)
-                VALUES (?, ?, ?, ?, 'student')";
+                (full_name, username, email, password, role, batch, subject)
+                VALUES (?, ?, ?, ?, 'student', ?, ?)";
 
         $stmt = mysqli_prepare($conn, $sql);
 
         if ($stmt) {
             mysqli_stmt_bind_param(
                 $stmt,
-                "ssss",
+                "ssssss",
                 $full_name,
                 $username,
                 $email,
-                $hashedPassword
+                $hashedPassword,
+                $batch,
+                $subject
             );
 
             if (mysqli_stmt_execute($stmt)) {
@@ -280,6 +284,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="e.g. aarav.rao@institute.edu" required <?php echo !$db_connected ? 'disabled' : ''; ?>>
+            </div>
+
+            <div class="form-group">
+                <label for="batch">Batch</label>
+                <select id="batch" name="batch" style="width: 100%; padding: 10px 14px; border: 1.5px solid rgba(21, 42, 80, 0.2); background-color: rgba(21, 42, 80, 0.03); border-radius: var(--r-sm); font-family: var(--font-mono); font-size: 0.85rem; color: var(--ink); box-sizing: border-box;" <?php echo !$db_connected ? 'disabled' : ''; ?>>
+                    <option value="CS-3A">CS-3A</option>
+                    <option value="CS-3B" selected>CS-3B</option>
+                    <option value="ECE-2A">ECE-2A</option>
+                    <option value="ME-2B">ME-2B</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Subject Bench</label>
+                <select id="subject" name="subject" style="width: 100%; padding: 10px 14px; border: 1.5px solid rgba(21, 42, 80, 0.2); background-color: rgba(21, 42, 80, 0.03); border-radius: var(--r-sm); font-family: var(--font-mono); font-size: 0.85rem; color: var(--ink); box-sizing: border-box;" <?php echo !$db_connected ? 'disabled' : ''; ?>>
+                    <option value="Chemistry Lab">Chemistry Lab</option>
+                    <option value="Physics Lab" selected>Physics Lab</option>
+                    <option value="Electrical Lab">Electrical Lab</option>
+                </select>
             </div>
 
             <div class="form-group">

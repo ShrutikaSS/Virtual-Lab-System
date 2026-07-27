@@ -123,12 +123,12 @@
     appData.studentsSummary = window.serverStudents.map(s => ({
       name: s.full_name,
       roll: s.username || `STU-${s.id}`,
-      batch: 'CS-3B',
-      subject: 'Physics Lab',
-      expCompleted: 3,
-      avgScore: 85,
-      hoursLogged: 12.5,
-      lastActive: 'Active'
+      batch: s.batch || 'CS-3B',
+      subject: s.subject || 'Physics Lab',
+      expCompleted: s.exp_completed !== undefined && s.exp_completed !== null ? parseInt(s.exp_completed) : 3,
+      avgScore: s.avg_score !== undefined && s.avg_score !== null ? parseInt(s.avg_score) : 85,
+      hoursLogged: s.hours_logged !== undefined && s.hours_logged !== null ? parseFloat(s.hours_logged) : 12.5,
+      lastActive: s.last_active || 'Active'
     }));
     appData.faculty.stats.studentsEnrolled = appData.studentsSummary.length;
   }

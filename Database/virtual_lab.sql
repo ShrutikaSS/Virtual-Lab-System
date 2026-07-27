@@ -34,21 +34,27 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('student','faculty','admin') NOT NULL DEFAULT 'student',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `batch` varchar(50) DEFAULT 'CS-3B',
+  `subject` varchar(100) DEFAULT 'Physics Lab',
+  `exp_completed` int(11) DEFAULT 3,
+  `avg_score` int(11) DEFAULT 85,
+  `hours_logged` decimal(5,2) DEFAULT 12.50,
+  `last_active` varchar(100) DEFAULT 'Active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `full_name`, `username`, `email`, `password`, `role`, `created_at`) VALUES
-(1, 'Sujal Shirsath', '125UAM1166', 'shirsathsujal2@gmail.com', '$2y$10$mu0snGPMXSdtiFOw7YREWuDIuY6fLEsCw8Q3Y/m7rUOwf0YCZZPJK', 'student', '2026-07-21 05:47:50'),
-(2, 'atharv shinde', 'atharv', 'atharvshinde1008@gmail.com', '$2y$10$En41PCLEpZj488fWy4WALektrNuG.IIF5ScseKQjMSaWjOZ6rz5iK', 'student', '2026-07-21 06:31:49'),
-(3, 'Shrutika Soudagar', 'shrutika', 'shrutika@gmail.com', '$2y$10$VcBPig5Bc2SVsVJ6etp2uOTDOhuia.fTiD4SZ9l8.tUGLzlXFzNXa', 'faculty', '2026-07-21 08:33:48'),
-(7, 'atharv shinde', 'pratik', 'atharv1008@gmail.com', '$2y$10$ZBWroIP.DS9wNauuy1sOCervv6MljC5dQTC84H290nbjlOQYFYrgK', 'student', '2026-07-22 04:56:58'),
-(9, 'Dipali Shende', 'Shende', 'dipalishende@gmail.com', '$2y$10$H/6irKghGg6b/weR08JrDeMwaqyNqSbqCjrD9VFULUmi2.DhMzmnu', 'faculty', '2026-07-22 05:57:53'),
-(10, 'Sujal Shirsath', 'sujal', 'sujal12@gmail.com', '$2y$10$Pj.FMynlpdUU7G/DPRUdqusHTPbUbPezkvt087jHFp7H3Xuvb0ULq', 'faculty', '2026-07-22 09:12:47'),
-(11, 'Atharva Shinde', 'Superadmin69', 'atharv99@gmail.com', '$2y$10$xgK8WPipL25yypoq9KCoo.g68diytcvXgWWxALs2UwWYEylo.BtkG', 'admin', '2026-07-23 08:42:37');
+INSERT INTO `users` (`id`, `full_name`, `username`, `email`, `password`, `role`, `created_at`, `batch`, `subject`, `exp_completed`, `avg_score`, `hours_logged`, `last_active`) VALUES
+(1, 'Sujal Shirsath', '125UAM1166', 'shirsathsujal2@gmail.com', '$2y$10$mu0snGPMXSdtiFOw7YREWuDIuY6fLEsCw8Q3Y/m7rUOwf0YCZZPJK', 'student', '2026-07-21 05:47:50', 'CS-3B', 'Chemistry Lab', 4, 88, 14.50, 'Today, 09:42 AM'),
+(2, 'atharv shinde', 'atharv', 'atharvshinde1008@gmail.com', '$2y$10$En41PCLEpZj488fWy4WALektrNuG.IIF5ScseKQjMSaWjOZ6rz5iK', 'student', '2026-07-21 06:31:49', 'CS-3A', 'Physics Lab', 5, 94, 18.20, 'Yesterday'),
+(3, 'Shrutika Soudagar', 'shrutika', 'shrutika@gmail.com', '$2y$10$VcBPig5Bc2SVsVJ6etp2uOTDOhuia.fTiD4SZ9l8.tUGLzlXFzNXa', 'faculty', '2026-07-21 08:33:48', 'CS-3B', 'Physics Lab', 3, 85, 12.50, 'Active'),
+(7, 'atharv shinde', 'pratik', 'atharv1008@gmail.com', '$2y$10$ZBWroIP.DS9wNauuy1sOCervv6MljC5dQTC84H290nbjlOQYFYrgK', 'student', '2026-07-22 04:56:58', 'ECE-2A', 'Electrical Lab', 4, 82, 12.00, '2026-07-19'),
+(9, 'Dipali Shende', 'Shende', 'dipalishende@gmail.com', '$2y$10$H/6irKghGg6b/weR08JrDeMwaqyNqSbqCjrD9VFULUmi2.DhMzmnu', 'faculty', '2026-07-22 05:57:53', 'CS-3B', 'Physics Lab', 3, 85, 12.50, 'Active'),
+(10, 'Sujal Shirsath', 'sujal', 'sujal12@gmail.com', '$2y$10$Pj.FMynlpdUU7G/DPRUdqusHTPbUbPezkvt087jHFp7H3Xuvb0ULq', 'faculty', '2026-07-22 09:12:47', 'CS-3B', 'Physics Lab', 3, 85, 12.50, 'Active'),
+(11, 'Atharva Shinde', 'Superadmin69', 'atharv99@gmail.com', '$2y$10$xgK8WPipL25yypoq9KCoo.g68diytcvXgWWxALs2UwWYEylo.BtkG', 'admin', '2026-07-23 08:42:37', 'CS-3B', 'Physics Lab', 3, 85, 12.50, 'Active');
 
 --
 -- Indexes for dumped tables
