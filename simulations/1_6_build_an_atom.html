@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive Build an Atom Lab — Chemistry Virtual Lab">
+  <title>Build an Atom Lab — Chemistry Virtual Lab</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0a0e17 0%, #131826 100%);
+      --panel-bg: rgba(23, 29, 46, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent-chem: #10b981; /* Chemical green accent */
+      --accent-glow: rgba(16, 185, 129, 0.35);
+      --text-primary: #fbFAF5;
+      --text-secondary: #8e9bb8;
+      --font-display: 'Space Grotesk', 'Inter', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      
+      /* Particle Colors */
+      --proton-color: #ef4444;
+      --neutron-color: #94a3b8;
+      --electron-color: #3b82f6;
+      
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+
+    body { 
+      background: #0a0e17;
+      background-image: var(--bg-gradient); 
+      color: var(--text-primary); 
+      font-family: var(--font-body); 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      padding: 20px; 
+      overflow-x: hidden; 
+    }
+
+    .lab-container { 
+      max-width: 1280px; 
+      width: 100%;
+      margin: auto; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 20px; 
+    }
+
+    /* Header Title Bar */
+    .lab-header { 
+      background: var(--panel-bg); 
+      border: 1px solid var(--panel-border); 
+      border-radius: 12px; 
+      padding: 16px 24px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      backdrop-filter: blur(12px); 
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); 
+    }
+
+    .lab-title-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      color: var(--text-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(-2px);
+    }
+
+    .lab-badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-chem);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .lab-title { 
+      font-family: var(--font-display); 
+      font-size: 1.5rem; 
+      font-weight: 700; 
+    }
+
+    .status-indicator { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      font-family: var(--font-mono); 
+      font-size: 0.75rem; 
+      color: var(--accent-chem); 
+      font-weight: 600; 
+    }
+
+    .glow-dot { 
+      width: 8px; 
+      height: 8px; 
+      background: var(--accent-chem); 
+      border-radius: 50%; 
+      box-shadow: 0 0 8px var(--accent-chem); 
+      animation: pulse 1.5s infinite alternate; 
+    }
+
+    @keyframes pulse { 
+      from { opacity: 0.4; transform: scale(0.9); } 
+      to { opacity: 1; transform: scale(1.15); } 
+    }
+
+    /* Main Workspace Grid */
+    .lab-workspace { 
+      display: grid; 
+      grid-template-columns: 1fr 380px; 
+      gap: 20px; 
+    }
+
+    @media (max-width: 1024px) { 
+      .lab-workspace { 
+        grid-template-columns: 1fr; 
+      } 
+    }
+
+    /* Left Visualizer Panel */
+    .visualizer-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .canvas-card { 
+      position: relative; 
+      background: rgba(10, 14, 23, 0.85); 
+      border: 1px solid var(--panel-border);
+      border-radius: 16px; 
+      padding: 12px;
+      overflow: hidden; 
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    canvas { 
+      width: 100%; 
+      height: 480px;
+      display: block; 
+      border-radius: 12px;
+      background: radial-gradient(circle at center, #111827 0%, #070a10 100%);
+      cursor: crosshair;
+    }
+
+    /* Overlay Help text on canvas */
+    .canvas-overlay-text {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      pointer-events: none;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      background: rgba(10, 14, 23, 0.75);
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Data Card */
+    .data-card { 
+      background: var(--panel-bg); 
+      border: 1px solid var(--panel-border); 
+      border-radius: 16px; 
+      padding: 20px; 
+      backdrop-filter: blur(12px); 
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+    }
+
+    .data-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); 
+      gap: 12px; 
+    }
+
+    .data-item { 
+      background: rgba(0, 0, 0, 0.2); 
+      border: 1px solid rgba(255, 255, 255, 0.03); 
+      border-radius: 10px; 
+      padding: 12px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 4px; 
+    }
+
+    .data-label { 
+      font-family: var(--font-mono); 
+      font-size: 0.7rem; 
+      text-transform: uppercase; 
+      letter-spacing: 0.05em; 
+      color: var(--text-secondary); 
+    }
+
+    .data-value { 
+      font-family: var(--font-mono); 
+      font-size: 1.35rem; 
+      font-weight: 600; 
+      color: var(--text-primary); 
+    }
+
+    /* Right Controls Panel */
+    .controls-panel { 
+      background: var(--panel-bg); 
+      border: 1px solid var(--panel-border); 
+      border-radius: 16px; 
+      padding: 24px; 
+      backdrop-filter: blur(12px); 
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .control-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .control-title { 
+      font-family: var(--font-display); 
+      font-size: 1.05rem; 
+      font-weight: 600; 
+      color: var(--accent-chem); 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+      padding-bottom: 6px; 
+    }
+
+    .toggle-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+
+    .checkbox-label:hover {
+      color: var(--text-primary);
+    }
+
+    .checkbox-label input {
+      accent-color: var(--accent-chem);
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Nuclear Symbol Card */
+    .symbol-card {
+      background: rgba(10, 14, 23, 0.8);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .symbol-display {
+      width: 120px;
+      height: 120px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: rgba(255, 255, 255, 0.02);
+      box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.02);
+    }
+
+    .symbol-mass {
+      position: absolute;
+      top: 15px;
+      left: 12px;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .symbol-proton {
+      position: absolute;
+      bottom: 15px;
+      left: 12px;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .symbol-charge {
+      position: absolute;
+      top: 15px;
+      right: 12px;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent-chem);
+    }
+
+    .symbol-element {
+      font-family: var(--font-display);
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .symbol-label {
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    /* Net Charge Indicator */
+    .charge-card {
+      background: rgba(10, 14, 23, 0.6);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .charge-status-badge {
+      text-align: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      transition: all 0.3s;
+    }
+
+    .charge-status-badge.neutral {
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .charge-status-badge.positive {
+      color: var(--warning);
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .charge-status-badge.negative {
+      color: var(--electron-color);
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.25);
+    }
+
+    /* Interactive Balance Scale Visual */
+    .balance-container {
+      position: relative;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .balance-track {
+      width: 80%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .balance-bar {
+      width: 100%;
+      height: 100%;
+      background: var(--text-secondary);
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: center;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .balance-bar::before {
+      content: '+';
+      position: absolute;
+      left: -15px;
+      top: -10px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--proton-color);
+    }
+
+    .balance-bar::after {
+      content: '−';
+      position: absolute;
+      right: -15px;
+      top: -10px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--electron-color);
+    }
+
+    .balance-pivot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-chem);
+      position: absolute;
+      box-shadow: 0 0 6px var(--accent-glow);
+    }
+
+    /* Mini Periodic Table */
+    .periodic-table-card {
+      background: rgba(10, 14, 23, 0.6);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .periodic-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 4px;
+    }
+
+    .periodic-cell {
+      aspect-ratio: 1;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.01);
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .periodic-cell:hover:not(.empty) {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .periodic-cell.empty {
+      border: none;
+      background: transparent;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .periodic-cell.active {
+      background: var(--accent-chem) !important;
+      color: #000 !important;
+      border-color: var(--accent-chem) !important;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .periodic-cell-num {
+      font-size: 0.5rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      opacity: 0.7;
+    }
+
+    .btn { 
+      padding: 12px 18px; 
+      border-radius: 10px; 
+      font-family: var(--font-display); 
+      font-weight: 600; 
+      cursor: pointer; 
+      border: none; 
+      transition: all 0.2s; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary { 
+      background: var(--danger); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); 
+    }
+
+    .btn-primary:hover { 
+      background: #dc2626; 
+      transform: translateY(-1px); 
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Tabs Layout */
+    .tabs-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .tab-header {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-chem);
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .tab-content {
+      display: none;
+      line-height: 1.6;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .tab-content h3 {
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      font-family: var(--font-display);
+    }
+
+    .tab-content ul, .tab-content ol {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .tab-content li {
+      margin-bottom: 6px;
+    }
+
+    .challenge-box {
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--accent-chem);
+    }
+
+    .challenge-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="lab-container">
+    <header class="lab-header">
+      <div class="lab-title-group">
+        <a href="../student/dashboard.php" class="back-btn" title="Back to Dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+        <span class="lab-badge">CHEMISTRY</span>
+        <h1 class="lab-title">Build an Atom Lab</h1>
+      </div>
+      <div class="status-indicator"><span class="glow-dot"></span>SIMULATOR ACTIVE</div>
+    </header>
+
+    <div class="lab-workspace">
+      <div class="visualizer-panel">
+        <div class="canvas-card">
+          <div class="canvas-overlay-text">Drag particles from the baskets at the bottom onto the orbits or center!</div>
+          <canvas id="atomCanvas"></canvas>
+        </div>
+        
+        <div class="data-card">
+          <div class="data-grid">
+            <div class="data-item">
+              <span class="data-label">Element</span>
+              <span class="data-value" id="elemName">Hydrogen</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Isotope</span>
+              <span class="data-value" id="isotopeName">Protium</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Atomic Number (Z)</span>
+              <span class="data-value" id="atomicNum">0</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">Mass Number (A)</span>
+              <span class="data-value" id="massNumber">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-panel">
+        <div class="control-section">
+          <div class="control-title">Display Settings</div>
+          <div class="toggle-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="showOrbits" checked>
+              <span>Show Bohr Orbits</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="showLabels" checked>
+              <span>Show Orbit Labels</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="showStability" checked>
+              <span>Show Stability Shake</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <div class="control-title">Periodic Table (Z = 1 - 10)</div>
+          <div class="periodic-table-card">
+            <div class="periodic-grid">
+              <!-- Row 1 -->
+              <div class="periodic-cell" data-z="1" id="pt-1"><span class="periodic-cell-num">1</span>H</div>
+              <div class="periodic-cell empty"></div>
+              <div class="periodic-cell empty"></div>
+              <div class="periodic-cell empty"></div>
+              <div class="periodic-cell empty"></div>
+              <div class="periodic-cell empty"></div>
+              <div class="periodic-cell empty"></div>
+              <div class="periodic-cell" data-z="2" id="pt-2"><span class="periodic-cell-num">2</span>He</div>
+              
+              <!-- Row 2 -->
+              <div class="periodic-cell" data-z="3" id="pt-3"><span class="periodic-cell-num">3</span>Li</div>
+              <div class="periodic-cell" data-z="4" id="pt-4"><span class="periodic-cell-num">4</span>Be</div>
+              <div class="periodic-cell" data-z="5" id="pt-5"><span class="periodic-cell-num">5</span>B</div>
+              <div class="periodic-cell" data-z="6" id="pt-6"><span class="periodic-cell-num">6</span>C</div>
+              <div class="periodic-cell" data-z="7" id="pt-7"><span class="periodic-cell-num">7</span>N</div>
+              <div class="periodic-cell" data-z="8" id="pt-8"><span class="periodic-cell-num">8</span>O</div>
+              <div class="periodic-cell" data-z="9" id="pt-9"><span class="periodic-cell-num">9</span>F</div>
+              <div class="periodic-cell" data-z="10" id="pt-10"><span class="periodic-cell-num">10</span>Ne</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <div class="control-title">Net Charge Card</div>
+          <div class="charge-card">
+            <div class="charge-status-badge neutral" id="chargeStatus">Neutral Atom</div>
+            <div class="balance-container">
+              <div class="balance-track">
+                <div class="balance-bar" id="balanceBar"></div>
+              </div>
+              <div class="balance-pivot"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <div class="control-title">Nuclear Symbol</div>
+          <div class="symbol-card">
+            <div class="symbol-display">
+              <div class="symbol-mass" id="symMass">-</div>
+              <div class="symbol-proton" id="symProtons">-</div>
+              <div class="symbol-charge" id="symCharge">-</div>
+              <div class="symbol-element" id="symElement">-</div>
+            </div>
+            <span class="symbol-label">Standard Notation</span>
+          </div>
+        </div>
+
+        <div class="control-section">
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primary" id="resetBtn" style="flex:1;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+              </svg>
+              Reset Atom
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info/Theory Tabs Card -->
+    <div class="tabs-card">
+      <div class="tab-header">
+        <button class="tab-btn active" data-tab="experiment">Experiment Guide</button>
+        <button class="tab-btn" data-tab="theory">Atomic Theory</button>
+        <button class="tab-btn" data-tab="isotopes">Stable Isotope Reference</button>
+      </div>
+
+      <div class="tab-content active" id="tab-experiment">
+        <h3>Interactive Lab Challenges</h3>
+        <p style="margin-bottom:12px;">Work through these interactive challenges to verify your understanding of atomic structure:</p>
+        
+        <div class="challenge-box">
+          <div class="challenge-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--accent-chem);">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Challenge 1: Build a Neutral Helium-4 Atom
+          </div>
+          <p>Drag exactly 2 Protons, 2 Neutrons, and 2 Electrons into their places. Verify that the "Element" reads Helium, the "Mass Number" reads 4, the "Net Charge Card" reads <b>Neutral Atom</b>, and the isotope is marked <b>Stable</b>.</p>
+        </div>
+
+        <div class="challenge-box">
+          <div class="challenge-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--accent-chem);">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Challenge 2: Construct a Radioactive/Unstable Isotope
+          </div>
+          <p>Build a Hydrogen atom (1 proton) but drag in 2 neutrons to make Hydrogen-3 (Tritium). Notice how the nucleus starts to <b>vibrate/shake</b>. This represents that the ratio of neutrons to protons is unstable and subject to radioactive decay!</p>
+        </div>
+
+        <div class="challenge-box">
+          <div class="challenge-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--accent-chem);">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Challenge 3: Create a Positive Lithium-6 Ion
+          </div>
+          <p>Build a Lithium atom (3 protons, 3 neutrons) but add only 2 electrons. Check the "Net Charge Card" and notice the balance scale tipping to the left (+). It should display <b>Positive Ion</b>, and the symbol notation should show a superscript <b>+1</b> charge.</p>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-theory">
+        <h3>The Anatomy of an Atom</h3>
+        <p style="margin-bottom: 12px;">Atoms are the basic building blocks of all matter. They are composed of three subatomic particles:</p>
+        <ul>
+          <li><b>Protons (P):</b> Positively charged particles ($+1\text{ e}$) found in the dense center of the atom (the nucleus). The number of protons defines the identity of the element.</li>
+          <li><b>Neutrons (N):</b> Neutral particles (no charge) found in the nucleus. They add mass to the atom and help bind protons together against electrostatic repulsion.</li>
+          <li><b>Electrons (e):</b> Negatively charged particles ($-1\text{ e}$) that orbit the nucleus in specific circular shells (Bohr model).</li>
+        </ul>
+        <br>
+        <h3>Key Definitions</h3>
+        <ul>
+          <li><b>Atomic Number ($Z$):</b> The number of protons in the nucleus. Defines the chemical element (e.g., $Z=1$ is Hydrogen, $Z=6$ is Carbon).</li>
+          <li><b>Mass Number ($A$):</b> The total number of protons and neutrons ($A = Z + N$).</li>
+          <li><b>Net Charge:</b> Calculated as $\text{Protons} - \text{Electrons}$. A neutral atom has equal protons and electrons. An ion is formed when they are unequal.</li>
+          <li><b>Isotopes:</b> Atoms of the same element (same number of protons) but different numbers of neutrons (different mass numbers).</li>
+        </ul>
+      </div>
+
+      <div class="tab-content" id="tab-isotopes">
+        <h3>Stable Isotopes Table (Elements 1–10)</h3>
+        <p style="margin-bottom: 12px;">The nuclear stability of isotopes depends on the balance between the strong nuclear force (which holds the nucleus together) and electrostatic repulsion between protons. Here are the stable configurations for elements 1 to 10:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); color: var(--text-primary);">
+              <th style="padding: 8px;">Element</th>
+              <th style="padding: 8px;">Atomic # ($Z$)</th>
+              <th style="padding: 8px;">Stable Neutrons ($N$)</th>
+              <th style="padding: 8px;">Stable Mass Numbers ($A$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Hydrogen (H)</td>
+              <td style="padding: 8px;">1</td>
+              <td style="padding: 8px;">0, 1</td>
+              <td style="padding: 8px;">1 (Protium), 2 (Deuterium)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Helium (He)</td>
+              <td style="padding: 8px;">2</td>
+              <td style="padding: 8px;">1, 2</td>
+              <td style="padding: 8px;">3, 4</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Lithium (Li)</td>
+              <td style="padding: 8px;">3</td>
+              <td style="padding: 8px;">3, 4</td>
+              <td style="padding: 8px;">6, 7</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Beryllium (Be)</td>
+              <td style="padding: 8px;">4</td>
+              <td style="padding: 8px;">5</td>
+              <td style="padding: 8px;">9</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Boron (B)</td>
+              <td style="padding: 8px;">5</td>
+              <td style="padding: 8px;">5, 6</td>
+              <td style="padding: 8px;">10, 11</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Carbon (C)</td>
+              <td style="padding: 8px;">6</td>
+              <td style="padding: 8px;">6, 7</td>
+              <td style="padding: 8px;">12, 13</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Nitrogen (N)</td>
+              <td style="padding: 8px;">7</td>
+              <td style="padding: 8px;">7, 8</td>
+              <td style="padding: 8px;">14, 15</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Oxygen (O)</td>
+              <td style="padding: 8px;">8</td>
+              <td style="padding: 8px;">8, 9, 10</td>
+              <td style="padding: 8px;">16, 17, 18</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Fluorine (F)</td>
+              <td style="padding: 8px;">9</td>
+              <td style="padding: 8px;">10</td>
+              <td style="padding: 8px;">19</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 8px;">Neon (Ne)</td>
+              <td style="padding: 8px;">10</td>
+              <td style="padding: 8px;">10, 11, 12</td>
+              <td style="padding: 8px;">20, 21, 22</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/build_atom.js"></script>
+  <script>
+    // Tab switching logic
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

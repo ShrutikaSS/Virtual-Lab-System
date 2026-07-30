@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive Forces and Motion Simulation — Zeal Virtual Lab">
+  <title>Forces and Motion: Basics — Physics Virtual Lab</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0a0e17 0%, #131826 100%);
+      --panel-bg: rgba(23, 29, 46, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent-color: #3b82f6; /* Accent Blue */
+      --accent-glow: rgba(59, 130, 246, 0.35);
+      --text-primary: #fbFAF5;
+      --text-secondary: #8e9bb8;
+      --font-display: 'Space Grotesk', 'Inter', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0a0e17;
+      background-image: var(--bg-gradient);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .lab-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header Title Bar */
+    .lab-header {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .lab-title-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lab-badge {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-color);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .lab-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .glow-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-color);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-color);
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.4; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+
+    /* Main Workspace Grid */
+    .lab-workspace {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .lab-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Visualizer Panel */
+    .visualizer-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .canvas-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 16px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      background: rgba(10, 14, 23, 0.85);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Live Data Readouts Card */
+    .data-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+    }
+
+    .data-item {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .data-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .data-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .value-unit {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: normal;
+      margin-left: 2px;
+    }
+
+    /* Plot Chart Card */
+    .plot-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .plot-container {
+      width: 100%;
+      height: 200px;
+    }
+
+    /* Controls Panel */
+    .controls-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .control-section-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+      color: var(--accent-color);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .control-label {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .control-readout {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      background: rgba(59, 130, 246, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Sliders styling */
+    .slider-input {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+      transition: background 0.3s;
+    }
+
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--accent-glow);
+      transition: transform 0.1s;
+    }
+
+    .slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    /* Select Inputs */
+    .select-input {
+      width: 100%;
+      background: rgba(10, 14, 23, 0.8);
+      border: 1px solid var(--panel-border);
+      color: var(--text-primary);
+      padding: 10px;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    .select-input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Toggles and checkboxes */
+    .toggle-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 4px;
+    }
+
+    .toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent-color);
+      color: var(--text-primary);
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    /* Buttons styling */
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-color);
+      color: var(--text-primary);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-full {
+      grid-column: span 2;
+    }
+
+    /* Theory Panel */
+    .theory-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      margin-top: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .theory-summary {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 18px 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      color: var(--accent-color);
+    }
+
+    .theory-summary::after {
+      content: '▼';
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .theory-card[open] .theory-summary::after {
+      transform: rotate(180deg);
+    }
+
+    .theory-content {
+      padding: 0 24px 24px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .theory-content h4 {
+      font-family: var(--font-display);
+      color: var(--text-primary);
+      font-size: 1rem;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    .formula-box {
+      background: rgba(10, 14, 23, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      margin: 8px 0;
+    }
+
+    .formula-explanation {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-align: left;
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* Hidden elements for dashboard integration compatibility */
+    .hidden-dashboard-data {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden elements for dashboard integration compatibility -->
+  <div class="hidden-dashboard-data">
+    <span id="trialSurface">Wood</span>
+    <span id="trialMass">50 kg</span>
+    <span id="trialApplied">0 N</span>
+    <span id="trialFriction">0 N</span>
+    <span id="trialAcceleration">0.00 m/s²</span>
+    <span id="trialMaxVel">0.00 m/s</span>
+  </div>
+
+  <div class="lab-container">
+    
+    <!-- Title Bar -->
+    <header class="lab-header">
+      <div class="lab-title-group">
+        <span class="lab-badge">PH·09</span>
+        <h1 class="lab-title">Forces and Motion: Basics — Newton's 2nd Law</h1>
+      </div>
+      <div class="live-indicator">
+        <span class="glow-dot"></span>
+        LIVE SIMULATION
+      </div>
+    </header>
+
+    <!-- Workspace Grid -->
+    <div class="lab-workspace">
+      
+      <!-- Left Column (Visuals and Data) -->
+      <div class="visualizer-panel">
+        
+        <!-- Canvas Visualizer Card -->
+        <div class="canvas-card">
+          <div class="card-title" style="margin-bottom: 10px;">
+            <span>Physical Bench Workspace</span>
+            <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">Push the box using the applied force slider</span>
+          </div>
+          <div class="canvas-container" id="canvasContainer">
+            <canvas id="physicsCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Live Data Readouts Card -->
+        <div class="data-card">
+          <div class="card-title">Real-time Numerical Readouts</div>
+          <div class="data-grid">
+            
+            <div class="data-item">
+              <span class="data-label">Net Force (F_net)</span>
+              <div class="data-value" id="readoutNetForce" style="color: #10b981;">0<span class="value-unit">N</span></div>
+            </div>
+            
+            <div class="data-item">
+              <span class="data-label">Acceleration (a)</span>
+              <div class="data-value" id="readoutAcceleration" style="color: #f59e0b;">0.00<span class="value-unit">m/s²</span></div>
+            </div>
+            
+            <div class="data-item">
+              <span class="data-label">Velocity (v)</span>
+              <div class="data-value" id="readoutVelocity" style="color: #3b82f6;">0.00<span class="value-unit">m/s</span></div>
+            </div>
+
+            <div class="data-item">
+              <span class="data-label">Position (x)</span>
+              <div class="data-value" id="readoutPosition">0.00<span class="value-unit">m</span></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Scrolling Chart Card -->
+        <div class="plot-card">
+          <div class="card-title" style="margin-bottom: 10px;">Dynamics Chart (Velocity & Acceleration vs Time)</div>
+          <div class="plot-container">
+            <canvas id="dynamicsChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column (Controls) -->
+      <div class="controls-panel">
+        
+        <!-- Applied Force Control -->
+        <div class="control-section-title">Applied Force Input</div>
+        
+        <div class="control-group">
+          <div class="control-label-row">
+            <span class="control-label">Applied Force (F_app)</span>
+            <span class="control-readout" id="forceReadout">0 N</span>
+          </div>
+          <input type="range" class="slider-input" id="forceSlider" min="-500" max="500" step="5" value="0">
+        </div>
+
+        <!-- Box Mass Control -->
+        <div class="control-section-title">Crate Properties</div>
+
+        <div class="control-group">
+          <div class="control-label-row">
+            <span class="control-label">Box Mass (m)</span>
+            <span class="control-readout" id="massReadout">50 kg</span>
+          </div>
+          <input type="range" class="slider-input" id="massSlider" min="1" max="200" step="1" value="50">
+        </div>
+
+        <!-- Surface Selector -->
+        <div class="control-group">
+          <label class="control-label" for="surfaceSelect">Surface Material</label>
+          <select class="select-input" id="surfaceSelect">
+            <option value="wood">Wood (Medium Friction)</option>
+            <option value="ice">Ice (Low / Near-Zero Friction)</option>
+            <option value="carpet">Carpet (High Friction)</option>
+          </select>
+        </div>
+
+        <!-- Visualization Toggles -->
+        <div class="control-section-title">Visual Overlays</div>
+
+        <div class="control-group">
+          <label class="control-label" style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 0.9rem;">
+            <input type="checkbox" id="showForcesCheck" checked style="width:16px; height:16px;">
+            <span>Show Force Vector Arrows</span>
+          </label>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 0.9rem;">
+            <input type="checkbox" id="showValuesCheck" checked style="width:16px; height:16px;">
+            <span>Show Force Values (Newton)</span>
+          </label>
+        </div>
+
+        <!-- Playback / Actions -->
+        <div class="control-section-title">Simulation Control</div>
+
+        <div class="control-group">
+          <div class="btn-grid">
+            <button class="btn btn-primary" id="playPauseBtn">
+              <span id="playPauseIcon">▶</span> <span id="playPauseText">Play</span>
+            </button>
+            <button class="btn btn-secondary" id="resetBtn">Reset</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Theory Panel -->
+    <details class="theory-card" open>
+      <summary class="theory-summary">Theoretical Background & Physics Formulas</summary>
+      <div class="theory-content">
+        <div>
+          <h4>Newton's Second Law of Motion</h4>
+          <p>
+            Newton's second law states that the acceleration $a$ of an object is directly proportional to the net force $F_{\text{net}}$ acting on it, and inversely proportional to its mass $m$:
+          </p>
+          <div class="formula-box">
+            F_{\text{net}} = m \cdot a \quad \implies \quad a = \frac{F_{\text{applied}} + F_{\text{friction}}}{m}
+            <span class="formula-explanation">Where: Net Force is the vector sum of all horizontal forces. Acceleration represents the change in velocity per unit time.</span>
+          </div>
+        </div>
+
+        <div>
+          <h4>Static vs. Kinetic Friction</h4>
+          <p>
+            Friction is a resistive force acting opposite to the direction of motion or intent of motion. It manifests in two distinct regimes:
+          </p>
+          <ul>
+            <li><strong>Static Friction ($f_s$):</strong> Operates when the object is stationary. It increases to match the applied force exactly, up to a maximum limit:
+              <div class="formula-box">f_s \le f_{s,\text{max}} = \mu_s \cdot N</div>
+            </li>
+            <li><strong>Kinetic Friction ($f_k$):</strong> Acts when the object is sliding. It has a constant value that is generally lower than maximum static friction:
+              <div class="formula-box">f_k = \mu_k \cdot N</div>
+            </li>
+          </ul>
+          <p>
+            Here, $N = m \cdot g$ is the normal force, representing the weight of the box pressing against the horizontal surface ($g \approx 9.81\text{ m/s}^2$).
+          </p>
+        </div>
+
+        <div>
+          <h4>Friction Material Coefficients</h4>
+          <p>
+            Different materials have distinct surface coefficients, yielding different friction responses:
+          </p>
+          <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--accent-color);">
+                <th style="padding: 8px;">Surface</th>
+                <th style="padding: 8px;">Static Coeff. ($\mu_s$)</th>
+                <th style="padding: 8px;">Kinetic Coeff. ($\mu_k$)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 8px; color: var(--text-primary);">Ice</td>
+                <td style="padding: 8px; font-family: var(--font-mono);">0.10</td>
+                <td style="padding: 8px; font-family: var(--font-mono);">0.05</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 8px; color: var(--text-primary);">Wood</td>
+                <td style="padding: 8px; font-family: var(--font-mono);">0.40</td>
+                <td style="padding: 8px; font-family: var(--font-mono);">0.30</td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 8px; color: var(--text-primary);">Carpet</td>
+                <td style="padding: 8px; font-family: var(--font-mono);">0.60</td>
+                <td style="padding: 8px; font-family: var(--font-mono);">0.50</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="margin-top: 10px;">
+            If the applied force is less than $f_{s,\text{max}}$, the box does not move. This is demonstrated visually in the simulation: below the threshold, the box will vibrate or shake, indicating that static friction is holding it stuck.
+          </p>
+        </div>
+      </div>
+    </details>
+
+  </div>
+
+  <script>
+    // --- UI Selectors ---
+    const canvas = document.getElementById('physicsCanvas');
+    const ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvasContainer');
+
+    const forceSlider = document.getElementById('forceSlider');
+    const forceReadout = document.getElementById('forceReadout');
+    const massSlider = document.getElementById('massSlider');
+    const massReadout = document.getElementById('massReadout');
+    const surfaceSelect = document.getElementById('surfaceSelect');
+
+    const showForcesCheck = document.getElementById('showForcesCheck');
+    const showValuesCheck = document.getElementById('showValuesCheck');
+
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playPauseIcon = document.getElementById('playPauseIcon');
+    const playPauseText = document.getElementById('playPauseText');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Readouts display
+    const readoutNetForce = document.getElementById('readoutNetForce');
+    const readoutAcceleration = document.getElementById('readoutAcceleration');
+    const readoutVelocity = document.getElementById('readoutVelocity');
+    const readoutPosition = document.getElementById('readoutPosition');
+
+    // Hidden dashboard elements
+    const trialSurface = document.getElementById('trialSurface');
+    const trialMass = document.getElementById('trialMass');
+    const trialApplied = document.getElementById('trialApplied');
+    const trialFriction = document.getElementById('trialFriction');
+    const trialAcceleration = document.getElementById('trialAcceleration');
+    const trialMaxVel = document.getElementById('trialMaxVel');
+
+    // --- Simulation Constants and Scaling ---
+    const G = 9.81;              // m/s^2
+    const PIXELS_PER_METER = 100; // 100 pixels = 1 meter. Max displacement +/- 2.5m
+    const Y_GROUND = 280;        // Y-level of the sliding surface
+    const CRATE_SIZE = 70;       // Box size (px)
+
+    // --- Friction Parameters Map ---
+    const SURFACE_COEFFS = {
+      ice: { mu_s: 0.10, mu_k: 0.05 },
+      wood: { mu_s: 0.40, mu_k: 0.30 },
+      carpet: { mu_s: 0.60, mu_k: 0.50 }
+    };
+
+    // --- Physics State Variables ---
+    let isRunning = false;
+    let mass = 50;              // kg
+    let appliedForce = 0;       // N
+    let velocity = 0;           // m/s
+    let position = 0;           // meters (center is 0)
+    let acceleration = 0;       // m/s^2
+    let frictionForce = 0;      // N
+    let netForce = 0;           // N
+    let maxVelObserved = 0.0;   // for trial logger
+
+    let surfaceType = 'wood';
+    let mu_s = SURFACE_COEFFS.wood.mu_s;
+    let mu_k = SURFACE_COEFFS.wood.mu_k;
+
+    // Shake animation state
+    let shakeTimer = 0;
+
+    // --- Chart.js Configuration ---
+    const chartCtx = document.getElementById('dynamicsChart').getContext('2d');
+    
+    // Line chart configuration with two y-axes
+    const dynamicsChart = new Chart(chartCtx, {
+      type: 'line',
+      data: {
+        labels: Array.from({length: 150}, (_, i) => (-15.0 + i*0.1).toFixed(1) + 's'),
+        datasets: [
+          {
+            label: 'Velocity (m/s)',
+            data: Array(150).fill(0),
+            borderColor: '#3b82f6', // Accent blue
+            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+            borderWidth: 2,
+            tension: 0.2,
+            pointRadius: 0,
+            yAxisID: 'yVel',
+            fill: true
+          },
+          {
+            label: 'Acceleration (m/s²)',
+            data: Array(150).fill(0),
+            borderColor: '#f59e0b', // Amber/Orange
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderDash: [4, 4],
+            tension: 0.1,
+            pointRadius: 0,
+            yAxisID: 'yAcc'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { 
+            labels: { color: '#8e9bb8', font: { size: 10 } }
+          }
+        },
+        scales: {
+          yVel: {
+            type: 'linear',
+            position: 'left',
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
+            ticks: { color: '#3b82f6', font: { family: 'IBM Plex Mono', size: 9 } },
+            title: { display: true, text: 'Velocity (m/s)', color: '#3b82f6', font: { size: 10 } },
+            suggestedMin: -5,
+            suggestedMax: 5
+          },
+          yAcc: {
+            type: 'linear',
+            position: 'right',
+            grid: { drawOnChartArea: false }, // only draw grid for left axis
+            ticks: { color: '#f59e0b', font: { family: 'IBM Plex Mono', size: 9 } },
+            title: { display: true, text: 'Acceleration (m/s²)', color: '#f59e0b', font: { size: 10 } },
+            suggestedMin: -10,
+            suggestedMax: 10
+          },
+          x: {
+            grid: { display: false },
+            ticks: { 
+              color: '#8e9bb8', 
+              font: { size: 8 },
+              callback: function(val, index) {
+                // Show ticks every 30 labels (3 seconds)
+                return index % 30 === 0 ? this.getLabelForValue(val) : '';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    let chartTimeBuffer = Array(150).fill(0);
+    let chartVelBuffer = Array(150).fill(0);
+    let chartAccBuffer = Array(150).fill(0);
+    let chartTimer = 0;
+
+    // --- Vector Drawing Utility ---
+    function drawArrow(xStart, yStart, xEnd, yEnd, color, label, valueText) {
+      const dx = xEnd - xStart;
+      const dy = yEnd - yStart;
+      const len = Math.sqrt(dx*dx + dy*dy);
+      
+      if (len < 6) return; // don't draw microscopic arrows
+      
+      const headlen = 10; // length of head in pixels
+      const angle = Math.atan2(dy, dx);
+      
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      
+      // Draw main line
+      ctx.beginPath();
+      ctx.moveTo(xStart, yStart);
+      ctx.lineTo(xEnd, yEnd);
+      ctx.stroke();
+      
+      // Draw arrowhead
+      ctx.beginPath();
+      ctx.moveTo(xEnd, yEnd);
+      ctx.lineTo(xEnd - headlen * Math.cos(angle - Math.PI / 6), yEnd - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(xEnd - headlen * Math.cos(angle + Math.PI / 6), yEnd - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+      
+      // Draw Label
+      const showValues = showValuesCheck.checked;
+      const text = showValues ? `${label} (${valueText})` : label;
+      
+      ctx.font = '10px IBM Plex Mono';
+      ctx.fillStyle = '#fbFAF5';
+      ctx.shadowColor = 'black';
+      ctx.shadowBlur = 4;
+      
+      // Position text above/beside arrow
+      let textX = xEnd;
+      let textY = yEnd - 8;
+      
+      if (dx > 0) {
+        textX = xEnd - ctx.measureText(text).width / 2;
+      } else if (dx < 0) {
+        textX = xEnd - ctx.measureText(text).width / 2;
+      } else {
+        // Vertical arrow
+        textX = xEnd + 8;
+        textY = yEnd + (dy > 0 ? -4 : 12);
+      }
+      
+      ctx.fillText(text, textX, textY);
+      ctx.shadowBlur = 0; // reset
+    }
+
+    // --- Resize handler ---
+    function resizeCanvas() {
+      const rect = canvasContainer.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      draw();
+    }
+
+    // --- Physics Solver ---
+    function updatePhysics(dt) {
+      if (!isRunning) return;
+
+      // Limit dt for frame drops
+      if (dt > 0.1) dt = 0.1;
+
+      const substeps = 20;
+      const sdt = dt / substeps;
+
+      for (let i = 0; i < substeps; i++) {
+        const normalForce = mass * G;
+        const staticLimit = mu_s * normalForce;
+        const kineticLimit = mu_k * normalForce;
+
+        if (Math.abs(velocity) < 1e-4) {
+          // Stationary Crate: Solve static friction threshold
+          if (Math.abs(appliedForce) <= staticLimit) {
+            frictionForce = -appliedForce;
+            netForce = 0;
+            acceleration = 0;
+            velocity = 0;
+          } else {
+            // Crate breaks free
+            frictionForce = -kineticLimit * Math.sign(appliedForce);
+            netForce = appliedForce + frictionForce;
+            acceleration = netForce / mass;
+            velocity += acceleration * sdt;
+          }
+        } else {
+          // Moving Crate: Kinetic friction opposes motion direction
+          frictionForce = -kineticLimit * Math.sign(velocity);
+          netForce = appliedForce + frictionForce;
+          acceleration = netForce / mass;
+          
+          const nextVelocity = velocity + acceleration * sdt;
+          
+          // Check for velocity crossing 0 (stopping case)
+          if (nextVelocity * velocity < 0) {
+            if (Math.abs(appliedForce) <= staticLimit) {
+              velocity = 0;
+              acceleration = 0;
+              frictionForce = -appliedForce;
+              netForce = 0;
+            } else {
+              // Crate crosses zero speed and immediately starts sliding opposite
+              velocity = 0;
+              frictionForce = -kineticLimit * Math.sign(appliedForce);
+              netForce = appliedForce + frictionForce;
+              acceleration = netForce / mass;
+              velocity += acceleration * sdt;
+            }
+          } else {
+            velocity = nextVelocity;
+          }
+        }
+
+        position += velocity * sdt;
+
+        // Boundaries: Canvas is 600px wide. Box is 70px.
+        // Screen range: [40, 560] pixels. Center is 300px.
+        // Meter limits: +/- 2.50 meters.
+        const maxPosMeters = 2.45;
+        if (position < -maxPosMeters) {
+          position = -maxPosMeters;
+          velocity = 0;
+          acceleration = 0;
+          netForce = 0;
+          frictionForce = -appliedForce; // Crate is jammed against the wall
+        } else if (position > maxPosMeters) {
+          position = maxPosMeters;
+          velocity = 0;
+          acceleration = 0;
+          netForce = 0;
+          frictionForce = -appliedForce;
+        }
+      }
+
+      if (Math.abs(velocity) > maxVelObserved) {
+        maxVelObserved = Math.abs(velocity);
+      }
+
+      shakeTimer += dt;
+      updateReadouts();
+    }
+
+    // --- Update UI Readouts ---
+    function updateReadouts() {
+      // Numerical readouts
+      readoutNetForce.innerHTML = `${Math.round(netForce)}<span class="value-unit">N</span>`;
+      readoutAcceleration.innerHTML = `${acceleration.toFixed(2)}<span class="value-unit">m/s²</span>`;
+      readoutVelocity.innerHTML = `${velocity.toFixed(2)}<span class="value-unit">m/s</span>`;
+      readoutPosition.innerHTML = `${position.toFixed(2)}<span class="value-unit">m</span>`;
+
+      // Hidden inputs for dashboard recording logger
+      trialSurface.textContent = surfaceSelect.options[surfaceSelect.selectedIndex].text;
+      trialMass.textContent = `${mass} kg`;
+      trialApplied.textContent = `${Math.round(appliedForce)} N`;
+      trialFriction.textContent = `${Math.round(frictionForce)} N`;
+      trialAcceleration.textContent = `${acceleration.toFixed(2)} m/s²`;
+      trialMaxVel.textContent = `${maxVelObserved.toFixed(2)} m/s`;
+    }
+
+    // --- Dynamic Chart Buffer Updates ---
+    function updateChartData(dt) {
+      chartTimer += dt;
+      
+      // Update data every 100ms (10Hz) to prevent performance issues
+      if (chartTimer >= 0.1) {
+        chartTimer = 0;
+        
+        // Shift buffers left
+        chartVelBuffer.shift();
+        chartVelBuffer.push(parseFloat(velocity.toFixed(2)));
+        
+        chartAccBuffer.shift();
+        chartAccBuffer.push(parseFloat(acceleration.toFixed(2)));
+        
+        // Update Chart
+        dynamicsChart.data.datasets[0].data = [...chartVelBuffer];
+        dynamicsChart.data.datasets[1].data = [...chartAccBuffer];
+        
+        // Dynamic chart Y scale
+        let maxV = Math.max(...chartVelBuffer.map(Math.abs));
+        let maxA = Math.max(...chartAccBuffer.map(Math.abs));
+        
+        dynamicsChart.options.scales.yVel.suggestedMax = Math.max(5, Math.ceil(maxV / 2) * 2);
+        dynamicsChart.options.scales.yVel.suggestedMin = -Math.max(5, Math.ceil(maxV / 2) * 2);
+        
+        dynamicsChart.options.scales.yAcc.suggestedMax = Math.max(10, Math.ceil(maxA / 5) * 5);
+        dynamicsChart.options.scales.yAcc.suggestedMin = -Math.max(10, Math.ceil(maxA / 5) * 5);
+        
+        dynamicsChart.update('none'); // silent frame update
+      }
+    }
+
+    // --- Render Graphics Loop ---
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const width = canvas.width / window.devicePixelRatio;
+      const height = canvas.height / window.devicePixelRatio;
+      
+      // Center reference position coordinate
+      const xCenter = width / 2;
+      const boxX = xCenter + position * PIXELS_PER_METER;
+      
+      // 1. Draw Surface Background Grid
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < height; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      
+      // 2. Draw Floor Surface
+      let surfaceColor = '#4b5563'; // Wood grey
+      if (surfaceType === 'ice') surfaceColor = '#67e8f9'; // Ice cyan glow
+      if (surfaceType === 'carpet') surfaceColor = '#14b8a6'; // Carpet teal texture
+      
+      ctx.fillStyle = surfaceColor;
+      ctx.fillRect(0, Y_GROUND, width, 12);
+      
+      // Draw grid markings on surface
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      for (let m = -2; m <= 2; m++) {
+        const mx = xCenter + m * PIXELS_PER_METER;
+        ctx.fillRect(mx - 1, Y_GROUND, 2, 8);
+        ctx.font = '8px IBM Plex Mono';
+        ctx.fillStyle = '#8e9bb8';
+        ctx.fillText(`${m}m`, mx - 6, Y_GROUND + 22);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      }
+
+      // Draw surface border
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, Y_GROUND);
+      ctx.lineTo(width, Y_GROUND);
+      ctx.stroke();
+
+      // 3. Shake Offset Math (Static friction shaking)
+      let shakeX = 0;
+      const isStuck = Math.abs(velocity) < 1e-4 && Math.abs(appliedForce) > 0;
+      if (isStuck) {
+        const normalForce = mass * G;
+        const staticLimit = mu_s * normalForce;
+        const forceRatio = Math.min(1.0, Math.abs(appliedForce) / staticLimit);
+        
+        // Shake amplitude increases as applied force approaches static threshold
+        const amp = 3.5 * forceRatio;
+        shakeX = Math.sin(shakeTimer * 65) * amp;
+      }
+      
+      const drawX = boxX + shakeX;
+
+      // 4. Draw Robot Pusher Character
+      if (Math.abs(appliedForce) > 0.05) {
+        const isPushingRight = appliedForce > 0;
+        ctx.save();
+        
+        // Position character next to crate
+        const characterX = isPushingRight ? (drawX - CRATE_SIZE / 2 - 18) : (drawX + CRATE_SIZE / 2 + 18);
+        ctx.translate(characterX, Y_GROUND);
+        if (!isPushingRight) {
+          ctx.scale(-1, 1); // Flip horizontally for pushing left
+        }
+
+        // Draw Stick-robot pushing
+        ctx.strokeStyle = '#3b82f6';
+        ctx.fillStyle = '#1e293b';
+        ctx.lineWidth = 3.5;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+
+        // Legs (Leaning Forward)
+        ctx.beginPath();
+        ctx.moveTo(-10, 0); // back foot
+        ctx.lineTo(-4, -18);
+        ctx.lineTo(0, -32); // hip
+        ctx.moveTo(6, 0);  // front foot
+        ctx.lineTo(2, -16);
+        ctx.lineTo(0, -32); // hip
+        ctx.stroke();
+
+        // Torso
+        ctx.beginPath();
+        ctx.moveTo(0, -32);
+        ctx.lineTo(8, -50); // neck
+        ctx.stroke();
+
+        // Arm (Pushing box)
+        ctx.beginPath();
+        ctx.moveTo(6, -46); // shoulder
+        ctx.lineTo(22, -44); // elbow
+        ctx.lineTo(28, -44); // hands touching crate
+        ctx.stroke();
+
+        // Head (with a small eye line)
+        ctx.beginPath();
+        ctx.arc(8, -56, 6, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.restore();
+      }
+
+      // 5. Draw Crate Box
+      ctx.fillStyle = '#1e293b'; // dark panel box fill
+      ctx.strokeStyle = '#3b82f6'; // glowing border
+      ctx.lineWidth = 3;
+      ctx.lineJoin = 'miter';
+      
+      // Box top left: (drawX - size/2, Y_GROUND - size)
+      ctx.fillRect(drawX - CRATE_SIZE/2, Y_GROUND - CRATE_SIZE, CRATE_SIZE, CRATE_SIZE);
+      ctx.strokeRect(drawX - CRATE_SIZE/2, Y_GROUND - CRATE_SIZE, CRATE_SIZE, CRATE_SIZE);
+      
+      // Draw crate wooden diagonal boards styling
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(drawX - CRATE_SIZE/2 + 4, Y_GROUND - CRATE_SIZE + 4);
+      ctx.lineTo(drawX + CRATE_SIZE/2 - 4, Y_GROUND - 4);
+      ctx.moveTo(drawX + CRATE_SIZE/2 - 4, Y_GROUND - CRATE_SIZE + 4);
+      ctx.lineTo(drawX - CRATE_SIZE/2 + 4, Y_GROUND - 4);
+      ctx.stroke();
+
+      // Rivets at box corners
+      ctx.fillStyle = '#3b82f6';
+      const offset = 6;
+      ctx.beginPath();
+      ctx.arc(drawX - CRATE_SIZE/2 + offset, Y_GROUND - CRATE_SIZE + offset, 2.5, 0, Math.PI*2);
+      ctx.arc(drawX + CRATE_SIZE/2 - offset, Y_GROUND - CRATE_SIZE + offset, 2.5, 0, Math.PI*2);
+      ctx.arc(drawX - CRATE_SIZE/2 + offset, Y_GROUND - offset, 2.5, 0, Math.PI*2);
+      ctx.arc(drawX + CRATE_SIZE/2 - offset, Y_GROUND - offset, 2.5, 0, Math.PI*2);
+      ctx.fill();
+
+      // Crate text label (Mass)
+      ctx.fillStyle = '#fbFAF5';
+      ctx.font = 'bold 10px Space Grotesk';
+      ctx.fillText('CRATE', drawX - 16, Y_GROUND - CRATE_SIZE/2 - 6);
+      ctx.font = '9px IBM Plex Mono';
+      ctx.fillStyle = '#8e9bb8';
+      ctx.fillText(`${mass} kg`, drawX - 15, Y_GROUND - CRATE_SIZE/2 + 6);
+
+      // 6. Draw Force Vectors
+      const showForces = showForcesCheck.checked;
+      if (showForces) {
+        const arrowY = Y_GROUND - CRATE_SIZE/2; // Center Y of crate
+        const vectorScale = 0.45; // 0.45px per Newton (e.g. 500N = 225px)
+        
+        // A. Applied Force vector (starts from center)
+        const appForceLen = appliedForce * vectorScale;
+        if (Math.abs(appliedForce) > 0.05) {
+          drawArrow(drawX, arrowY, drawX + appForceLen, arrowY, '#3b82f6', 'F_applied', `${Math.round(appliedForce)} N`);
+        }
+
+        // B. Friction Force vector (starts from center)
+        const frictionForceLen = frictionForce * vectorScale;
+        if (Math.abs(frictionForce) > 0.05) {
+          drawArrow(drawX, arrowY, drawX + frictionForceLen, arrowY, '#ef4444', 'F_friction', `${Math.round(Math.abs(frictionForce))} N`);
+        }
+
+        // C. Gravity (weight mg) - points down from bottom center of box
+        const gravityVal = mass * G;
+        const gravityLen = Math.min(100, gravityVal * 0.15); // scaled limit
+        drawArrow(drawX, Y_GROUND - CRATE_SIZE/2, drawX, Y_GROUND - CRATE_SIZE/2 + gravityLen, '#8e9bb8', 'Gravity', `${Math.round(gravityVal)} N`);
+
+        // D. Normal Force - points up from top center of box
+        const normalVal = mass * G;
+        const normalLen = Math.min(100, normalVal * 0.15);
+        drawArrow(drawX, Y_GROUND - CRATE_SIZE/2, drawX, Y_GROUND - CRATE_SIZE/2 - normalLen, '#9c8cf0', 'Normal', `${Math.round(normalVal)} N`);
+
+        // E. Net Force vector - drawn separately above crate to prevent clutter
+        const netForceLen = netForce * vectorScale;
+        if (Math.abs(netForce) > 0.5) {
+          const netForceY = Y_GROUND - CRATE_SIZE - 25;
+          drawArrow(drawX, netForceY, drawX + netForceLen, netForceY, '#10b981', 'Net Force', `${Math.round(netForce)} N`);
+        }
+      }
+    }
+
+    // --- Reset functions ---
+    function resetSim() {
+      velocity = 0;
+      position = 0;
+      acceleration = 0;
+      frictionForce = 0;
+      netForce = 0;
+      maxVelObserved = 0.0;
+      forceSlider.value = 0;
+      appliedForce = 0;
+      forceReadout.textContent = '0 N';
+      
+      chartVelBuffer.fill(0);
+      chartAccBuffer.fill(0);
+      dynamicsChart.data.datasets[0].data = [...chartVelBuffer];
+      dynamicsChart.data.datasets[1].data = [...chartAccBuffer];
+      dynamicsChart.update();
+      
+      updateReadouts();
+      draw();
+    }
+
+    // --- Simulation loop ---
+    let lastTimestamp = 0;
+    function simulationLoop(timestamp) {
+      if (!isRunning) return;
+
+      const dt = (timestamp - lastTimestamp) / 1000.0;
+      lastTimestamp = timestamp;
+
+      updatePhysics(dt);
+      updateChartData(dt);
+      draw();
+
+      requestAnimationFrame(simulationLoop);
+    }
+
+    // --- Events handlers ---
+    forceSlider.addEventListener('input', () => {
+      appliedForce = parseFloat(forceSlider.value);
+      forceReadout.textContent = `${Math.round(appliedForce)} N`;
+      updateReadouts();
+      draw();
+    });
+
+    massSlider.addEventListener('input', () => {
+      mass = parseInt(massSlider.value);
+      massReadout.textContent = `${mass} kg`;
+      
+      // Instantly calculate static friction holding state
+      const normalForce = mass * G;
+      const staticLimit = mu_s * normalForce;
+      if (Math.abs(velocity) < 1e-4) {
+        if (Math.abs(appliedForce) <= staticLimit) {
+          frictionForce = -appliedForce;
+          netForce = 0;
+          acceleration = 0;
+        } else {
+          frictionForce = -mu_k * normalForce * Math.sign(appliedForce);
+          netForce = appliedForce + frictionForce;
+          acceleration = netForce / mass;
+        }
+      }
+      
+      updateReadouts();
+      draw();
+    });
+
+    surfaceSelect.addEventListener('change', () => {
+      surfaceType = surfaceSelect.value;
+      mu_s = SURFACE_COEFFS[surfaceType].mu_s;
+      mu_k = SURFACE_COEFFS[surfaceType].mu_k;
+      
+      // Update logger hidden data
+      trialSurface.textContent = surfaceSelect.options[surfaceSelect.selectedIndex].text;
+      
+      // Instantly evaluate state
+      const normalForce = mass * G;
+      const staticLimit = mu_s * normalForce;
+      if (Math.abs(velocity) < 1e-4) {
+        if (Math.abs(appliedForce) <= staticLimit) {
+          frictionForce = -appliedForce;
+          netForce = 0;
+          acceleration = 0;
+        } else {
+          frictionForce = -mu_k * normalForce * Math.sign(appliedForce);
+          netForce = appliedForce + frictionForce;
+          acceleration = netForce / mass;
+        }
+      }
+
+      updateReadouts();
+      draw();
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+      isRunning = !isRunning;
+      if (isRunning) {
+        playPauseBtn.className = "btn btn-danger";
+        playPauseIcon.textContent = "⏸";
+        playPauseText.textContent = "Pause";
+        lastTimestamp = performance.now();
+        requestAnimationFrame(simulationLoop);
+      } else {
+        playPauseBtn.className = "btn btn-primary";
+        playPauseIcon.textContent = "▶";
+        playPauseText.textContent = "Play";
+      }
+    });
+
+    resetBtn.addEventListener('click', resetSim);
+    showForcesCheck.addEventListener('change', draw);
+    showValuesCheck.addEventListener('change', draw);
+
+    // Window layout resize
+    window.addEventListener('resize', resizeCanvas);
+
+    // --- Init ---
+    resizeCanvas();
+    resetSim();
+  </script>
+</body>
+</html>

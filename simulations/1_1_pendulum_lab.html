@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive Pendulum Lab Simulation — Zeal Virtual Lab">
+  <title>Pendulum Lab — Physics Virtual Lab</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0a0e17 0%, #131826 100%);
+      --panel-bg: rgba(23, 29, 46, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent-color: #3b82f6; /* Electric Blue */
+      --accent-glow: rgba(59, 130, 246, 0.35);
+      --text-primary: #fbFAF5;
+      --text-secondary: #8e9bb8;
+      --font-display: 'Space Grotesk', 'Inter', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0a0e17;
+      background-image: var(--bg-gradient);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .lab-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header Title Bar */
+    .lab-header {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .lab-title-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lab-badge {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-color);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .lab-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .lab-header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Main Workspace Grid */
+    .lab-workspace {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .lab-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Visualizer Panel */
+    .visualizer-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .canvas-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      max-width: 500px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Energy Bar Chart Overlay */
+    .energy-bar-container {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 70px;
+      height: 160px;
+      background: rgba(10, 14, 23, 0.85);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      gap: 6px;
+      backdrop-filter: blur(4px);
+    }
+
+    .energy-bar-track {
+      height: 100%;
+      width: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column-reverse;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .energy-bar-fill {
+      width: 100%;
+      border-radius: 4px;
+      transition: height 0.05s linear;
+    }
+
+    .ke-fill {
+      background: linear-gradient(to top, #f59e0b, #fbbf24);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+    }
+
+    .pe-fill {
+      background: linear-gradient(to top, #3b82f6, #60a5fa);
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+    }
+
+    .te-fill {
+      background: linear-gradient(to top, #10b981, #34d399);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+
+    .energy-label {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 8px;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      font-weight: bold;
+    }
+
+    .energy-legend {
+      position: absolute;
+      bottom: -32px;
+      right: 0;
+      display: flex;
+      gap: 8px;
+      font-size: 9px;
+      font-family: var(--font-mono);
+      background: rgba(10, 14, 23, 0.85);
+      border: 1px solid var(--panel-border);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .legend-color {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    /* Live Data Readouts Card */
+    .data-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+    }
+
+    .data-item {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .data-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .data-value {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .value-unit {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: normal;
+      margin-left: 2px;
+    }
+
+    /* Live Plot Card */
+    .plot-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .plot-container {
+      width: 100%;
+      height: 180px;
+    }
+
+    /* Controls Panel */
+    .controls-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .control-section-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+      color: var(--accent-color);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .control-label {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .control-readout {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      background: rgba(59, 130, 246, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Sliders styling */
+    .slider-input {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+      transition: background 0.3s;
+    }
+
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--accent-glow);
+      transition: transform 0.1s;
+    }
+
+    .slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Warning container */
+    .warning-box {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 8px;
+      padding: 10px;
+      display: none;
+      gap: 8px;
+      align-items: flex-start;
+      margin-top: 4px;
+    }
+
+    .warning-icon {
+      color: var(--warning);
+      font-size: 1.1rem;
+      margin-top: -1px;
+    }
+
+    .warning-text {
+      color: #ffd082;
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+
+    /* Select Inputs */
+    .select-input {
+      width: 100%;
+      background: rgba(10, 14, 23, 0.8);
+      border: 1px solid var(--panel-border);
+      color: var(--text-primary);
+      padding: 10px;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    .select-input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Custom slider for gravity when 'custom' is selected */
+    .custom-gravity-container {
+      display: none;
+      margin-top: 10px;
+      border-left: 2px solid var(--accent-color);
+      padding-left: 10px;
+    }
+
+    /* Damping Toggles */
+    .toggle-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 4px;
+    }
+
+    .toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent-color);
+      color: var(--text-primary);
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    /* Primary Action Buttons */
+    .action-btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-color);
+      color: var(--text-primary);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px var(--accent-glow);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary:active {
+      transform: translateY(0);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .btn-full {
+      grid-column: span 2;
+    }
+
+    /* Theory panel (collapsible details) */
+    .theory-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      margin-top: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .theory-summary {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 18px 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      color: var(--accent-color);
+    }
+
+    .theory-summary::after {
+      content: '▼';
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .theory-card[open] .theory-summary::after {
+      transform: rotate(180deg);
+    }
+
+    .theory-content {
+      padding: 0 24px 24px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .theory-content h4 {
+      font-family: var(--font-display);
+      color: var(--text-primary);
+      font-size: 1rem;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    .formula-box {
+      background: rgba(10, 14, 23, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      color: var(--text-primary);
+      margin: 10px 0;
+    }
+
+    .formula-explanation {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-align: left;
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* Key Terms list */
+    .theory-list {
+      list-style-position: inside;
+      padding-left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .theory-list li strong {
+      color: var(--text-primary);
+    }
+
+    /* Animations and UI elements */
+    .glow-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-color);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-color);
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+<!-- Hidden elements for dashboard integration compatibility -->
+<span id="periodVal" style="display:none;">2.01 s</span>
+<span id="freqVal" style="display:none;">0.50 Hz</span>
+
+<div class="lab-container">
+  
+  <!-- Title Bar -->
+  <header class="lab-header">
+    <div class="lab-title-group">
+      <span class="lab-badge">PH·01</span>
+      <h1 class="lab-title">Pendulum Lab — SHM Dynamics</h1>
+    </div>
+    <div class="lab-header-actions">
+      <div class="live-indicator">
+        <span class="glow-dot"></span>
+        LIVE DATA
+      </div>
+    </div>
+  </header>
+
+  <!-- Workspace Grid -->
+  <div class="lab-workspace">
+    
+    <!-- Left Column (Visuals and Data) -->
+    <div class="visualizer-panel">
+      
+      <!-- Canvas visualizer -->
+      <div class="canvas-card">
+        <div class="canvas-container">
+          <canvas id="pendulumCanvas"></canvas>
+          
+          <!-- Live Energy Bar Chart overlay -->
+          <div class="energy-bar-container">
+            <span class="energy-legend" style="display:none;"></span> <!-- container for spacing reference -->
+            
+            <div class="energy-bar-track" title="Kinetic Energy (KE)">
+              <div class="energy-bar-fill ke-fill" id="keBar" style="height: 0%;"></div>
+              <span class="energy-label">KE</span>
+            </div>
+            <div class="energy-bar-track" title="Potential Energy (PE)">
+              <div class="energy-bar-fill pe-fill" id="peBar" style="height: 0%;"></div>
+              <span class="energy-label">PE</span>
+            </div>
+            <div class="energy-bar-track" title="Total Mechanical Energy (Total)">
+              <div class="energy-bar-fill te-fill" id="teBar" style="height: 0%;"></div>
+              <span class="energy-label">TE</span>
+            </div>
+
+            <!-- Tiny absolute legend -->
+            <div class="energy-legend">
+              <div class="legend-item"><div class="legend-color" style="background:#f59e0b;"></div>KE</div>
+              <div class="legend-item"><div class="legend-color" style="background:#3b82f6;"></div>PE</div>
+              <div class="legend-item"><div class="legend-color" style="background:#10b981;"></div>TE</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Data Readouts Card -->
+      <div class="data-card">
+        <div class="data-grid">
+          
+          <div class="data-item">
+            <span class="data-label">Calculated Period (T₀)</span>
+            <div class="data-value" id="calcPeriod">2.01<span class="value-unit">s</span></div>
+          </div>
+          
+          <div class="data-item">
+            <span class="data-label">Measured Period (T)</span>
+            <div class="data-value" id="measPeriod">0.00<span class="value-unit">s</span></div>
+          </div>
+          
+          <div class="data-item">
+            <span class="data-label">Current Angle (θ)</span>
+            <div class="data-value" id="currentAngle">0.0<span class="value-unit">°</span></div>
+          </div>
+
+          <div class="data-item">
+            <span class="data-label">Angular Velocity (ω)</span>
+            <div class="data-value" id="angularVel">0.00<span class="value-unit">rad/s</span></div>
+          </div>
+
+          <div class="data-item" style="grid-column: span 2;">
+            <span class="data-label">Stopwatch Time</span>
+            <div class="data-value" id="stopwatchDisplay" style="color: #60a5fa;">00:00.00</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Scrolling Chart Card -->
+      <div class="plot-card">
+        <div class="plot-container">
+          <canvas id="angleTimeChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column (Controls) -->
+    <div class="controls-panel">
+      
+      <!-- Mechanical Parameters -->
+      <div class="control-section-title">Pendulum Setup</div>
+      
+      <!-- Length slider -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <span class="control-label">Length (L)</span>
+          <span class="control-readout" id="lengthReadout">1.00 m</span>
+        </div>
+        <input type="range" class="slider-input" id="lengthSlider" min="0.1" max="2.5" step="0.05" value="1.00">
+      </div>
+
+      <!-- Mass slider -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <span class="control-label">Bob Mass (m)</span>
+          <span class="control-readout" id="massReadout">1.0 kg</span>
+        </div>
+        <input type="range" class="slider-input" id="massSlider" min="0.1" max="5.0" step="0.1" value="1.0">
+      </div>
+
+      <!-- Initial displacement angle -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <span class="control-label">Initial Angle (θ₀)</span>
+          <span class="control-readout" id="angleReadout">30°</span>
+        </div>
+        <input type="range" class="slider-input" id="angleSlider" min="5" max="90" step="1" value="30">
+        
+        <!-- Large angle warning box -->
+        <div class="warning-box" id="largeAngleWarning">
+          <div class="warning-icon">⚠️</div>
+          <div class="warning-text">
+            Small-angle approximation breaks down above 20°. Formula T₀ = 2π√(L/g) will deviate from true physical behavior. A second-order correction is active in <strong>Calculated Period</strong>.
+          </div>
+        </div>
+      </div>
+
+      <!-- Environmental Parameters -->
+      <div class="control-section-title">Environment & Force</div>
+
+      <!-- Gravity select dropdown -->
+      <div class="control-group">
+        <label class="control-label" for="gravitySelect">Gravity (g)</label>
+        <select class="select-input" id="gravitySelect">
+          <option value="9.807">Earth (9.81 m/s²)</option>
+          <option value="1.62">Moon (1.62 m/s²)</option>
+          <option value="3.71">Mars (3.71 m/s²)</option>
+          <option value="24.79">Jupiter (24.79 m/s²)</option>
+          <option value="custom">Custom Gravity...</option>
+        </select>
+        
+        <!-- Custom gravity slider container -->
+        <div class="custom-gravity-container" id="customGravityContainer">
+          <div class="control-label-row">
+            <span class="control-label" style="font-size: 0.8rem;">Custom Gravity Value</span>
+            <span class="control-readout" style="font-size: 0.8rem;" id="customGravityReadout">9.81 m/s²</span>
+          </div>
+          <input type="range" class="slider-input" id="customGravitySlider" min="1.0" max="25.0" step="0.1" value="9.8">
+        </div>
+      </div>
+
+      <!-- Damping selector -->
+      <div class="control-group">
+        <span class="control-label">Air Resistance (Damping)</span>
+        <div class="toggle-group">
+          <button class="toggle-btn active" data-damping="none">None</button>
+          <button class="toggle-btn" data-damping="low">Low</button>
+          <button class="toggle-btn" data-damping="high">High</button>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="action-btn-group">
+        <button class="btn btn-primary" id="playPauseBtn">
+          <span class="btn-icon">▶</span> <span id="playPauseText">Start</span>
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">Reset</button>
+        <button class="btn btn-danger btn-full" id="clearStopwatchBtn">Reset Stopwatch</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Theory Panel -->
+  <details class="theory-card">
+    <summary class="theory-summary">Theoretical Background & Formulas</summary>
+    <div class="theory-content">
+      <div>
+        <h4>Simple Harmonic Motion (SHM) of a Pendulum</h4>
+        <p>
+          A simple pendulum is an idealized physical model consisting of a point mass suspended by a massless, unstretchable string. Under the influence of gravity, when the bob is displaced from its equilibrium position, it experiences a restoring force that acts to return it to the center.
+        </p>
+        <p>
+          Applying Newton's second law along the tangential direction yields the differential equation of motion:
+        </p>
+        <div class="formula-box">
+          d²θ/dt² + (g / L) sin(θ) = 0
+        </div>
+      </div>
+
+      <div>
+        <h4>The Small-Angle Approximation</h4>
+        <p>
+          For small angles (where θ is small in radians), we can make the approximation <strong>sin(θ) ≈ θ</strong>. This linearizes the differential equation to:
+        </p>
+        <div class="formula-box">
+          d²θ/dt² + (g / L) θ = 0
+        </div>
+        <p>
+          This is the defining equation of a Simple Harmonic Oscillator. The general solution describing the angular displacement over time is:
+        </p>
+        <div class="formula-box">
+          θ(t) = θ₀ · cos(ωt)
+          <span class="formula-explanation">Where: θ₀ is the initial displacement angle, L is string length, g is gravitational acceleration, and ω = √(g/L) is the angular frequency.</span>
+        </div>
+      </div>
+
+      <div>
+        <h4>Time Period Calculation & Corrections</h4>
+        <p>
+          Under the small-angle approximation, the theoretical period of oscillation <strong>T₀</strong> is completely independent of the mass of the bob and the amplitude:
+        </p>
+        <div class="formula-box">
+          T₀ = 2π · √(L / g)
+        </div>
+        <p>
+          When the initial angle θ₀ exceeds 20°, this approximation fails. The true period becomes longer, which we estimate using a second-order power series correction:
+        </p>
+        <div class="formula-box">
+          T = T₀ · (1 + θ₀²/16)
+          <span class="formula-explanation">Where θ₀ is expressed in radians. In this simulation, the data panel dynamically adjusts to this corrected value to mirror real physical behavior.</span>
+        </div>
+      </div>
+
+      <div>
+        <h4>Conservation of Energy</h4>
+        <p>
+          In the absence of damping, mechanical energy is conserved. Energy continuously shifts back and forth between:
+        </p>
+        <ul class="theory-list">
+          <li><strong>Potential Energy (PE):</strong> PE = m · g · h = m · g · L(1 - cos(θ)). PE is maximized at the endpoints (where θ = ±θ₀).</li>
+          <li><strong>Kinetic Energy (KE):</strong> KE = ½ · m · v² = ½ · m · L² · (dθ/dt)². KE is maximized at the bottom (equilibrium point, θ = 0).</li>
+          <li><strong>Total Energy (TE):</strong> TE = PE + KE = constant. When air resistance is enabled, energy is dissipated as heat, and TE exponentially decays.</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+</div>
+
+<script>
+  // Page Element Selectors
+  const canvas = document.getElementById('pendulumCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const lengthSlider = document.getElementById('lengthSlider');
+  const lengthReadout = document.getElementById('lengthReadout');
+  const massSlider = document.getElementById('massSlider');
+  const massReadout = document.getElementById('massReadout');
+  const angleSlider = document.getElementById('angleSlider');
+  const angleReadout = document.getElementById('angleReadout');
+
+  const gravitySelect = document.getElementById('gravitySelect');
+  const customGravityContainer = document.getElementById('customGravityContainer');
+  const customGravitySlider = document.getElementById('customGravitySlider');
+  const customGravityReadout = document.getElementById('customGravityReadout');
+
+  const largeAngleWarning = document.getElementById('largeAngleWarning');
+
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const playPauseText = document.getElementById('playPauseText');
+  const resetBtn = document.getElementById('resetBtn');
+  const clearStopwatchBtn = document.getElementById('clearStopwatchBtn');
+  const stopwatchDisplay = document.getElementById('stopwatchDisplay');
+
+  // Data Panel readouts
+  const calcPeriodDisplay = document.getElementById('calcPeriod');
+  const measPeriodDisplay = document.getElementById('measPeriod');
+  const currentAngleDisplay = document.getElementById('currentAngle');
+  const angularVelDisplay = document.getElementById('angularVel');
+
+  // Energy bars
+  const keBar = document.getElementById('keBar');
+  const peBar = document.getElementById('peBar');
+  const teBar = document.getElementById('teBar');
+
+  // --- Physical Simulation Parameters (Default States) ---
+  let L = 1.0;            // m
+  let m = 1.0;            // kg
+  let g = 9.807;          // m/s^2
+  let theta0Deg = 30;     // Initial angle in degrees
+  let theta0 = (theta0Deg * Math.PI) / 180; // rads
+  let dampingType = 'none'; // none, low, high
+  let gamma = 0.0;        // damping coefficient
+
+  // Damping presets map
+  const dampingPresets = {
+    none: 0.0,
+    low: 0.04,
+    high: 0.16
+  };
+
+  // State variables for physics loop
+  let isRunning = false;
+  let t = 0.0;            // Running physics time (s)
+  let lastTimestamp = 0;  // For calculating dt
+  let currentTheta = theta0;
+  let currentOmega = 0.0;
+  let maxSwingRealized = theta0; // max angle in current swing (for arc plotting)
+
+  // Measured Period (Zero-crossing) state
+  let crossings = []; // timestamps of zero crossings
+  let lastCrossingSign = 0; // 1 = positive, -1 = negative
+  let simulatedMeasuredPeriod = 0.0;
+
+  // Stopwatch state
+  let stopwatchTime = 0.0; // seconds
+
+  // --- Real-time Chart.js Setup ---
+  const chartCtx = document.getElementById('angleTimeChart').getContext('2d');
+  let plotTime = [];
+  let plotAngle = [];
+  const maxPlotPoints = 200; // limit plot points for performance (~10 seconds at 50ms intervals)
+
+  // Initialize scrolling window plot data
+  for (let i = 0; i < maxPlotPoints; i++) {
+    plotTime.push(-(maxPlotPoints - i) * 0.05); // t = -10s to 0s
+    plotAngle.push(0);
+  }
+
+  const angleTimeChart = new Chart(chartCtx, {
+    type: 'line',
+    data: {
+      labels: plotTime.map(val => val.toFixed(1) + 's'),
+      datasets: [{
+        label: 'Angular Displacement (θ°)',
+        data: plotAngle,
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+        borderWidth: 2,
+        tension: 0.3,
+        pointRadius: 0,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: '#8e9bb8', font: { family: 'Space Grotesk', size: 10 } }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.03)' },
+          ticks: {
+            color: '#8e9bb8',
+            maxTicksLimit: 10,
+            font: { family: 'IBM Plex Mono', size: 9 }
+          }
+        },
+        y: {
+          min: -90,
+          max: 90,
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: {
+            color: '#8e9bb8',
+            stepSize: 30,
+            font: { family: 'IBM Plex Mono', size: 9 }
+          }
+        }
+      },
+      animation: false
+    }
+  });
+
+  // --- Canvas Sizing ---
+  function resizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.parentNode.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // --- Controls Interaction ---
+  lengthSlider.addEventListener('input', () => {
+    L = parseFloat(lengthSlider.value);
+    lengthReadout.textContent = `${L.toFixed(2)} m`;
+    updateStaticParameters();
+  });
+
+  massSlider.addEventListener('input', () => {
+    m = parseFloat(massSlider.value);
+    massReadout.textContent = `${m.toFixed(1)} kg`;
+    // Mass visual effect (radius) is done inside the draw function
+    updateStaticParameters();
+  });
+
+  angleSlider.addEventListener('input', () => {
+    theta0Deg = parseInt(angleSlider.value);
+    angleReadout.textContent = `${theta0Deg}°`;
+    theta0 = (theta0Deg * Math.PI) / 180;
+    
+    // Warn if angle is above 20 degrees
+    if (theta0Deg > 20) {
+      largeAngleWarning.style.display = 'flex';
+    } else {
+      largeAngleWarning.style.display = 'none';
+    }
+    
+    resetSimulationState();
+  });
+
+  gravitySelect.addEventListener('change', () => {
+    if (gravitySelect.value === 'custom') {
+      customGravityContainer.style.display = 'block';
+      g = parseFloat(customGravitySlider.value);
+    } else {
+      customGravityContainer.style.display = 'none';
+      g = parseFloat(gravitySelect.value);
+    }
+    updateStaticParameters();
+  });
+
+  customGravitySlider.addEventListener('input', () => {
+    g = parseFloat(customGravitySlider.value);
+    customGravityReadout.textContent = `${g.toFixed(2)} m/s²`;
+    updateStaticParameters();
+  });
+
+  // Damping Toggles
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      dampingType = e.target.dataset.damping;
+      gamma = dampingPresets[dampingType];
+      resetSimulationState();
+    });
+  });
+
+  // Play Pause Button
+  playPauseBtn.addEventListener('click', () => {
+    isRunning = !isRunning;
+    if (isRunning) {
+      playPauseText.textContent = 'Pause';
+      playPauseBtn.style.background = '#e11d48'; // red for pause
+      playPauseBtn.style.boxShadow = '0 4px 12px rgba(225, 29, 72, 0.4)';
+      lastTimestamp = performance.now();
+      requestAnimationFrame(simLoop);
+    } else {
+      playPauseText.textContent = 'Start';
+      playPauseBtn.style.background = 'var(--accent-color)';
+      playPauseBtn.style.boxShadow = '0 4px 12px var(--accent-glow)';
+    }
+  });
+
+  // Reset Button
+  resetBtn.addEventListener('click', () => {
+    restoreDefaults();
+  });
+
+  // Clear Stopwatch Button
+  clearStopwatchBtn.addEventListener('click', () => {
+    stopwatchTime = 0.0;
+    updateStopwatchDisplay();
+  });
+
+  // --- Calculation Helpers ---
+  function getNaturalFrequency() {
+    return Math.sqrt(g / L);
+  }
+
+  function getDampedFrequency() {
+    const w0 = getNaturalFrequency();
+    return Math.sqrt(Math.max(0.001, w0 * w0 - gamma * gamma));
+  }
+
+  function updateStaticParameters() {
+    // Calculate theoretical period with large-angle correction (second order)
+    const T0 = 2 * Math.PI * Math.sqrt(L / g);
+    const correctedT = T0 * (1 + (theta0 * theta0) / 16);
+    calcPeriodDisplay.innerHTML = `${correctedT.toFixed(3)}<span class="value-unit">s</span>`;
+    
+    // Update hidden compatibility elements for dashboard integration
+    document.getElementById('periodVal').textContent = correctedT.toFixed(2) + ' s';
+    document.getElementById('freqVal').textContent = (1 / correctedT).toFixed(2) + ' Hz';
+    
+    // Reset simulation state if parameters change
+    resetSimulationState();
+  }
+
+  function resetSimulationState() {
+    t = 0.0;
+    currentTheta = theta0;
+    currentOmega = 0.0;
+    maxSwingRealized = theta0;
+    crossings = [];
+    lastCrossingSign = Math.sign(theta0);
+    
+    // Reset plots
+    plotAngle.fill(0);
+    angleTimeChart.data.datasets[0].data = plotAngle;
+    angleTimeChart.update();
+    
+    // Clear live displays if paused
+    if (!isRunning) {
+      currentAngleDisplay.innerHTML = `${theta0Deg.toFixed(1)}<span class="value-unit">°</span>`;
+      angularVelDisplay.innerHTML = `0.00<span class="value-unit">rad/s</span>`;
+      measPeriodDisplay.innerHTML = `${simulatedMeasuredPeriod > 0 ? simulatedMeasuredPeriod.toFixed(3) : '0.00'}<span class="value-unit">s</span>`;
+      updateEnergyBars(theta0, 0);
+    }
+  }
+
+  function restoreDefaults() {
+    isRunning = false;
+    playPauseText.textContent = 'Start';
+    playPauseBtn.style.background = 'var(--accent-color)';
+    playPauseBtn.style.boxShadow = '0 4px 12px var(--accent-glow)';
+
+    L = 1.0;
+    m = 1.0;
+    g = 9.807;
+    theta0Deg = 30;
+    theta0 = (theta0Deg * Math.PI) / 180;
+    dampingType = 'none';
+    gamma = 0.0;
+    stopwatchTime = 0.0;
+    simulatedMeasuredPeriod = 0.0;
+
+    lengthSlider.value = 1.0;
+    lengthReadout.textContent = '1.00 m';
+    
+    massSlider.value = 1.0;
+    massReadout.textContent = '1.0 kg';
+    
+    angleSlider.value = 30;
+    angleReadout.textContent = '30°';
+    largeAngleWarning.style.display = 'none';
+
+    gravitySelect.value = '9.807';
+    customGravityContainer.style.display = 'none';
+    customGravitySlider.value = 9.8;
+    customGravityReadout.textContent = '9.80 m/s²';
+
+    document.querySelectorAll('.toggle-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.damping === 'none');
+    });
+
+    updateStaticParameters();
+    resetSimulationState();
+    updateStopwatchDisplay();
+  }
+
+  function updateStopwatchDisplay() {
+    const mins = Math.floor(stopwatchTime / 60);
+    const secs = Math.floor(stopwatchTime % 60);
+    const centis = Math.floor((stopwatchTime * 100) % 100);
+    
+    const minStr = mins < 10 ? '0' + mins : mins;
+    const secStr = secs < 10 ? '0' + secs : secs;
+    const centiStr = centis < 10 ? '0' + centis : centis;
+    
+    stopwatchDisplay.textContent = `${minStr}:${secStr}.${centiStr}`;
+  }
+
+  // --- Real-time Chart Update ---
+  let lastPlotUpdateTime = 0;
+  function updatePlotData(thetaDeg) {
+    plotAngle.push(thetaDeg);
+    plotAngle.shift();
+    
+    angleTimeChart.data.datasets[0].data = plotAngle;
+    angleTimeChart.update();
+  }
+
+  // --- Energy Bars Update ---
+  function updateEnergyBars(theta, omega) {
+    const h = L * (1 - Math.cos(theta));
+    const pe = m * g * h;
+    // v = L * omega (angular velocity to linear velocity)
+    const v = L * omega;
+    const ke = 0.5 * m * v * v;
+    
+    // Total Mechanical Energy at t=0 (max amplitude)
+    const thetaMax = theta0 * Math.exp(-gamma * t);
+    const hMax = L * (1 - Math.cos(thetaMax));
+    const totalE = m * g * hMax;
+
+    // Convert to percentages relative to max starting energy (to scale the bars nicely)
+    const maxStartEnergy = m * g * L * (1 - Math.cos(theta0));
+    
+    let pePercent = 0;
+    let kePercent = 0;
+    let tePercent = 0;
+
+    if (maxStartEnergy > 0) {
+      pePercent = Math.min(100, Math.max(0, (pe / maxStartEnergy) * 100));
+      kePercent = Math.min(100, Math.max(0, (ke / maxStartEnergy) * 100));
+      tePercent = Math.min(100, Math.max(0, (totalE / maxStartEnergy) * 100));
+    }
+
+    peBar.style.height = `${pePercent}%`;
+    keBar.style.height = `${kePercent}%`;
+    teBar.style.height = `${tePercent}%`;
+  }
+
+  // --- Drawing the Pendulum ---
+  function draw() {
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    const h = canvas.height / (window.devicePixelRatio || 1);
+
+    ctx.clearRect(0, 0, w, h);
+
+    const pivotX = w / 2;
+    const pivotY = 60;
+    const visualLengthMultiplier = 110; // scale meters to screen pixels
+    const maxVisualLength = visualLengthMultiplier * L;
+
+    // Bob coordinates
+    const bobX = pivotX + maxVisualLength * Math.sin(currentTheta);
+    const bobY = pivotY + maxVisualLength * Math.cos(currentTheta);
+
+    // 1. Draw Protractor Overlay at the Pivot
+    const protractorRadius = 80;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.015)';
+
+    // Protractor filled semi-circle
+    ctx.beginPath();
+    ctx.arc(pivotX, pivotY, protractorRadius, 0, Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    // Protractor ticks every 15 degrees
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.font = '8px IBM Plex Mono';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    for (let deg = -90; deg <= 90; deg += 15) {
+      const rad = (deg * Math.PI) / 180 + Math.PI / 2;
+      const tickLength = deg % 30 === 0 ? 10 : 5;
+      
+      const x1 = pivotX + (protractorRadius - tickLength) * Math.sin(rad);
+      const y1 = pivotY + (protractorRadius - tickLength) * Math.cos(rad);
+      const x2 = pivotX + protractorRadius * Math.sin(rad);
+      const y2 = pivotY + protractorRadius * Math.cos(rad);
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      if (deg % 30 === 0 && Math.abs(deg) !== 90) {
+        const textX = pivotX + (protractorRadius + 8) * Math.sin(rad);
+        const textY = pivotY + (protractorRadius + 8) * Math.cos(rad);
+        ctx.fillText(Math.abs(deg), textX, textY);
+      }
+    }
+
+    // 2. Draw Faint Arc showing range of swing
+    const currentMaxAmplitude = theta0 * Math.exp(-gamma * t);
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.arc(pivotX, pivotY, maxVisualLength, Math.PI/2 - currentMaxAmplitude, Math.PI/2 + currentMaxAmplitude);
+    ctx.stroke();
+    ctx.setLineDash([]); // clear dash
+
+    // 3. Draw Rod/String
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pivotX, pivotY);
+    ctx.lineTo(bobX, bobY);
+    ctx.stroke();
+
+    // 4. Draw Pivot point center dot
+    ctx.fillStyle = '#fbFAF5';
+    ctx.beginPath();
+    ctx.arc(pivotX, pivotY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 5. Draw Bob (Filled circle, size relative to mass)
+    // Scale bob radius: 0.1kg -> 10px, 5.0kg -> 26px
+    const bobRadius = 10 + (m - 0.1) * (16 / 4.9);
+    
+    // Radial gradient for premium 3D look
+    const gradient = ctx.createRadialGradient(bobX - bobRadius/3, bobY - bobRadius/3, bobRadius/10, bobX, bobY, bobRadius);
+    gradient.addColorStop(0, '#60a5fa');
+    gradient.addColorStop(0.3, '#3b82f6');
+    gradient.addColorStop(1, '#1d4ed8');
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(bobX, bobY, bobRadius, 0, 2 * Math.PI);
+    ctx.shadowColor = 'rgba(59, 130, 246, 0.4)';
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    
+    // Clear shadow properties for next draw calls
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // --- Dynamic Simulation Loop ---
+  function simLoop(timestamp) {
+    if (!isRunning) return;
+
+    // Calculate delta time
+    const dt = (timestamp - lastTimestamp) / 1000; // in seconds
+    lastTimestamp = timestamp;
+
+    // Step physics model forward
+    t += dt;
+    stopwatchTime += dt;
+    updateStopwatchDisplay();
+
+    // Physics equations (Analytical Damped SHM under small angle)
+    const w0 = getNaturalFrequency();
+    const wd = getDampedFrequency();
+
+    // θ(t) = θ₀ * e^(-γt) * cos(ω_d * t)
+    const dampMultiplier = Math.exp(-gamma * t);
+    const prevTheta = currentTheta;
+    currentTheta = theta0 * dampMultiplier * Math.cos(wd * t);
+
+    // Angular Velocity derivative: dθ/dt = -θ₀ * e^(-γt) * [ γ*cos(ω_d * t) + ω_d*sin(ω_d * t) ]
+    currentOmega = -theta0 * dampMultiplier * (gamma * Math.cos(wd * t) + wd * Math.sin(wd * t));
+
+    // Zero Crossing Detection for measured period
+    const currentSign = Math.sign(currentTheta);
+    if (currentSign !== lastCrossingSign && lastCrossingSign !== 0) {
+      const now = stopwatchTime;
+      crossings.push(now);
+      
+      // We need crossings in the same direction to establish a full period (3 crossings = 1 full wave)
+      if (crossings.length >= 3) {
+        simulatedMeasuredPeriod = crossings[crossings.length - 1] - crossings[crossings.length - 3];
+        measPeriodDisplay.innerHTML = `${simulatedMeasuredPeriod.toFixed(3)}<span class="value-unit">s</span>`;
+        crossings.shift(); // keep array length bound
+      }
+      lastCrossingSign = currentSign;
+    }
+
+    // Update Displays
+    const currentAngleDeg = (currentTheta * 180) / Math.PI;
+    currentAngleDisplay.innerHTML = `${currentAngleDeg.toFixed(1)}<span class="value-unit">°</span>`;
+    angularVelDisplay.innerHTML = `${currentOmega.toFixed(2)}<span class="value-unit">rad/s</span>`;
+
+    updateEnergyBars(currentTheta, currentOmega);
+
+    // Update graph scrolling window at ~20Hz (every 50ms) to avoid CPU bottleneck
+    const nowMs = performance.now();
+    if (nowMs - lastPlotUpdateTime > 50) {
+      updatePlotData(currentAngleDeg);
+      lastPlotUpdateTime = nowMs;
+    }
+
+    draw();
+    requestAnimationFrame(simLoop);
+  }
+
+  // --- Initial Render ---
+  updateStaticParameters();
+  draw();
+
+</script>
+</body>
+</html>

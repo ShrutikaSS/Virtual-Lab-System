@@ -214,6 +214,10 @@ if ($student) {
         <span class="nav-dot"></span>
         <span>Electrical (BEEE)</span>
       </div>
+      <div class="nav-item" data-view="simulations" tabIndex="0" role="button" aria-label="Navigate to Interactive Stimulation">
+        <span class="nav-dot"></span>
+        <span>Stimulation</span>
+      </div>
       <div class="nav-item" data-view="profile" tabIndex="0" role="button" aria-label="Navigate to My Student Profile">
         <span class="nav-dot"></span>
         <span>My Profile</span>
@@ -277,6 +281,9 @@ if ($student) {
       <!-- View 4: Profile View -->
       <div id="view-profile" class="view"></div>
 
+      <!-- View 5: Interactive Simulations -->
+      <div id="view-simulations" class="view"></div>
+
     </main>
 
   </div>
@@ -284,8 +291,36 @@ if ($student) {
 </div>
 
 <script>
-    window.loggedInStudent = <?php echo json_encode($student); ?>;
-    window.serverBroadcasts = <?php echo json_encode($broadcasts); ?>;
+    const studentRaw = `<?php echo isset($student) ? addslashes(json_encode($student)) : ""; ?>`;
+    if (studentRaw.startsWith('<?') || !studentRaw.trim()) {
+      window.loggedInStudent = {
+        full_name: "atharv",
+        roll_no: "ME22B1001",
+        academic_program: "Mechanical Engineering",
+        semester: 4,
+        batch: "2024",
+        email: "atharv@zeal.edu.in",
+        phone: "+91 98765 43210",
+        faculty_mentor: "Dr. K. Raghavan"
+      };
+    } else {
+      try {
+        window.loggedInStudent = JSON.parse(studentRaw);
+      } catch(e) {
+        window.loggedInStudent = { full_name: "atharv" };
+      }
+    }
+
+    const broadcastsRaw = `<?php echo isset($broadcasts) ? addslashes(json_encode($broadcasts)) : ""; ?>`;
+    if (broadcastsRaw.startsWith('<?') || !broadcastsRaw.trim()) {
+      window.serverBroadcasts = [];
+    } else {
+      try {
+        window.serverBroadcasts = JSON.parse(broadcastsRaw);
+      } catch(e) {
+        window.serverBroadcasts = [];
+      }
+    }
 </script>
 
 <!-- Custom Animations & Cursor -->

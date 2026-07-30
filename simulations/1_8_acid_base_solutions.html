@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive Acid-Base Solutions Simulation — Zeal Virtual Lab">
+  <title>Acid-Base Solutions — Chemistry Virtual Lab</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0a0e17 0%, #131826 100%);
+      --panel-bg: rgba(23, 29, 46, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent-color: #22c55e; /* Green accent */
+      --accent-glow: rgba(34, 197, 94, 0.35);
+      --text-primary: #fbFAF5;
+      --text-secondary: #8e9bb8;
+      --font-display: 'Space Grotesk', 'Inter', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #22c55e;
+      --neutral: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0a0e17;
+      background-image: var(--bg-gradient);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .lab-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header Title Bar */
+    .lab-header {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .lab-title-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lab-badge {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--accent-color);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .lab-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    .glow-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-color);
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.4; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+
+    /* Main Workspace Grid */
+    .lab-workspace {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .lab-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Visualizer Panel */
+    .visualizer-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .canvas-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    /* Workbench container */
+    .sim-canvas-container {
+      position: relative;
+      width: 100%;
+      height: 420px;
+      background: rgba(10, 14, 23, 0.5);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* SVG Beaker display */
+    #beakerSvg {
+      position: absolute;
+      bottom: 20px;
+      left: 15%;
+      pointer-events: none;
+    }
+
+    /* Canvas molecular view circular inset */
+    .molecular-lens {
+      position: absolute;
+      right: 12%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      border: 6px solid #4b5563;
+      background: #020617;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.05), inset 0 0 20px rgba(0,0,0,0.8), 0 10px 25px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+
+    /* Magnifier handle decoration */
+    .magnifier-handle {
+      position: absolute;
+      right: 10%;
+      bottom: 8%;
+      width: 14px;
+      height: 70px;
+      background: linear-gradient(90deg, #374151, #1f2937);
+      border-radius: 4px;
+      transform: rotate(-45deg);
+      transform-origin: top center;
+      border: 1px solid rgba(255,255,255,0.1);
+      z-index: 2;
+    }
+
+    /* Dynamic molecular canvas */
+    #molecularCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Live pH probe overlay */
+    #phProbe {
+      position: absolute;
+      left: 20%;
+      top: -150px; /* Hidden initially, slides down */
+      width: 60px;
+      height: 220px;
+      z-index: 10;
+      transition: top 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    #phProbe.inserted {
+      top: 100px; /* Inserted in liquid */
+    }
+
+    /* Legend Overlay */
+    .particles-legend {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.75rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-double-dot {
+      width: 18px;
+      height: 10px;
+      border-radius: 5px;
+      position: relative;
+    }
+
+    .legend-double-dot span {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Data card */
+    .data-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 15px;
+    }
+
+    .data-item {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .data-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .data-value {
+      font-family: var(--font-mono);
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .value-unit {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: normal;
+      margin-left: 2px;
+    }
+
+    /* Right Controls Panel */
+    .controls-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .control-section-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+      color: var(--accent-color);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .control-label {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .control-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    /* Input Controls styling */
+    .sim-select {
+      background: rgba(10, 14, 23, 0.6);
+      border: 1px solid var(--panel-border);
+      color: var(--text-primary);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sim-select:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 6px var(--accent-glow);
+    }
+
+    .sim-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .sim-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      box-shadow: 0 0 6px var(--accent-glow);
+      transition: transform 0.1s;
+    }
+
+    .sim-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Weak Acid/Base Ka/Kb Presets Panel */
+    .strength-parameter-box {
+      border-left: 2px solid var(--accent-color);
+      padding-left: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(255,255,255,0.01);
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+
+    /* Action Buttons */
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 12px;
+      border-radius: 10px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      user-select: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-color);
+      color: #0b130a;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: #4ade80;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Theory panel */
+    .theory-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      margin-top: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .theory-summary {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 18px 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      color: var(--accent-color);
+    }
+
+    .theory-summary::after {
+      content: '▼';
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .theory-card[open] .theory-summary::after {
+      transform: rotate(180deg);
+    }
+
+    .theory-content {
+      padding: 0 24px 24px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .theory-content h4 {
+      font-family: var(--font-display);
+      color: var(--text-primary);
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    .formula-box {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-family: var(--font-mono);
+      color: var(--accent-color);
+      font-size: 1.05rem;
+      border-left: 3px solid var(--accent-color);
+      margin: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .formula-explanation {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+    }
+
+    .theory-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-left: 5px;
+    }
+
+    .theory-list li {
+      position: relative;
+      padding-left: 18px;
+    }
+
+    .theory-list li::before {
+      content: '•';
+      color: var(--accent-color);
+      position: absolute;
+      left: 0;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="lab-container">
+  
+  <!-- Header Bar -->
+  <header class="lab-header">
+    <div class="lab-title-group">
+      <span class="lab-badge">CHEMISTRY</span>
+      <h1 class="lab-title">Acid-Base Solutions</h1>
+    </div>
+    <div class="status-indicator">
+      <span class="glow-dot"></span>
+      <span class="mono">SYSTEM ACTIVE</span>
+    </div>
+  </header>
+
+  <!-- Workspace Grid -->
+  <div class="lab-workspace">
+    
+    <!-- Left Column: Beaker, Canvas Molecular view, Data Panel -->
+    <div class="visualizer-panel">
+      
+      <!-- Visualizer Workbench -->
+      <div class="canvas-card">
+        
+        <!-- Legend of particles -->
+        <div class="particles-legend" id="legendBox">
+          <!-- Populated dynamically based on solution type -->
+        </div>
+
+        <div class="sim-canvas-container">
+          
+          <!-- Beaker SVG (drawn on left side) -->
+          <svg id="beakerSvg" width="220" height="240" viewBox="0 0 220 240">
+            <!-- Liquid Fill -->
+            <path id="liquidFill" d="M 40 100 L 180 100 L 176 225 Q 176 230 170 230 L 50 230 Q 44 230 44 225 Z" fill="rgba(34, 197, 94, 0.4)" />
+            <!-- Beaker Glass Outline -->
+            <path d="M 40 30 L 40 225 Q 40 230 48 230 L 172 230 Q 180 230 180 225 L 180 30 M 34 30 L 46 30 M 174 30 L 186 30" fill="none" stroke="rgba(251,250,245,0.7)" stroke-width="5" stroke-linecap="round" />
+            <!-- Graduation line marks -->
+            <line x1="40" y1="100" x2="65" y2="100" stroke="rgba(251,250,245,0.4)" stroke-width="1.5" />
+            <line x1="40" y1="140" x2="60" y2="140" stroke="rgba(251,250,245,0.3)" stroke-width="1.5" />
+            <line x1="40" y1="180" x2="60" y2="180" stroke="rgba(251,250,245,0.3)" stroke-width="1.5" />
+          </svg>
+
+          <!-- live pH probe sliding overlay -->
+          <div id="phProbe">
+            <svg width="60" height="220" viewBox="0 0 60 220" style="overflow: visible;">
+              <defs>
+                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/>
+                </filter>
+              </defs>
+              <g filter="url(#shadow)">
+                <path d="M 30 0 Q 30 -30 20 -50" fill="none" stroke="#2d3748" stroke-width="5" />
+                <rect x="18" y="10" width="24" height="120" rx="6" fill="#1e293b" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+                <rect x="22" y="16" width="16" height="32" rx="3" fill="#020617" />
+                <text id="probeReadout" x="30" y="36" fill="#22c55e" font-family="monospace" font-weight="bold" font-size="11" text-anchor="middle">7.00</text>
+                <rect x="25" y="130" width="10" height="60" fill="#64748b" />
+                <circle cx="30" cy="198" r="10" fill="rgba(147, 197, 253, 0.4)" stroke="#3b82f6" stroke-width="2" />
+                <circle cx="30" cy="198" r="13" fill="rgba(34, 197, 94, 0.35)" />
+              </g>
+            </svg>
+          </div>
+
+          <!-- Circular Molecular Lens Inset -->
+          <div class="molecular-lens">
+            <canvas id="molecularCanvas"></canvas>
+          </div>
+          <div class="magnifier-handle"></div>
+
+        </div>
+      </div>
+
+      <!-- Data Readouts Panel -->
+      <div class="data-card">
+        <h3 class="control-section-title" style="border:none; padding:0; font-size:1rem; color:var(--text-primary);">Equilibrium Concentration Data</h3>
+        
+        <!-- Target DOM elements for trials logger -->
+        <span id="trialSolType" style="display: none;">Strong Acid</span>
+        <span id="trialConc" style="display: none;">0.100 M</span>
+        <span id="trialPh" style="display: none;">1.00</span>
+        <span id="trialDissociation" style="display: none;">100.0%</span>
+
+        <div class="data-grid">
+          <div class="data-item">
+            <span class="data-label">pH Value</span>
+            <span class="data-value" id="valPh">1.00</span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">pOH Value</span>
+            <span class="data-value" id="valPoh">13.00</span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">Dissociation</span>
+            <span class="data-value" id="valDiss">100.00<span class="value-unit">%</span></span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">[H₃O⁺] Conc</span>
+            <span class="data-value" id="valH3o" style="font-size:1.15rem;">1.00 × 10⁻¹<span class="value-unit">M</span></span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">[OH⁻] Conc</span>
+            <span class="data-value" id="valOh" style="font-size:1.15rem;">1.00 × 10⁻¹³<span class="value-unit">M</span></span>
+          </div>
+          <div class="data-item" style="grid-column: span 1;">
+            <span class="data-label" id="ratioLabel">[HA] / [A⁻] Ratio</span>
+            <span class="data-value" id="valRatio" style="font-size:1.05rem;">0 : 100</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Panel Controls -->
+    <div class="controls-panel">
+      <h2 class="control-section-title">Solution Parameters</h2>
+      
+      <!-- Solution Type Selector -->
+      <div class="control-group">
+        <label class="control-label" for="solTypeSelect">Solution Type:</label>
+        <select class="sim-select" id="solTypeSelect" onchange="changeSolutionType()">
+          <option value="strong_acid" selected>Strong Acid</option>
+          <option value="weak_acid">Weak Acid</option>
+          <option value="strong_base">Strong Base</option>
+          <option value="weak_base">Weak Base</option>
+          <option value="water">Pure Water</option>
+        </select>
+      </div>
+
+      <!-- Concentration Slider -->
+      <div class="control-group" id="concControlGroup">
+        <div class="control-label-row">
+          <span class="control-label">Concentration (C):</span>
+          <span class="control-value" id="concValDisplay">0.100 M</span>
+        </div>
+        <!-- Log slider: value represents Math.log10(C) from -3 to 0 -->
+        <input type="range" class="sim-slider" id="concSlider" min="-3" max="0" step="0.05" value="-1" oninput="updateConcentration()">
+      </div>
+
+      <!-- Strength Selector (Ka/Kb) for Weak Acid/Base -->
+      <div class="strength-parameter-box" id="strengthBox" style="display: none;">
+        
+        <!-- Preset Dropdown -->
+        <div class="control-group">
+          <label class="control-label" for="strengthPresetSelect" id="strengthPresetLabel">Acid Strength (Ka):</label>
+          <select class="sim-select" id="strengthPresetSelect" onchange="changeStrengthPreset()">
+            <!-- Populated dynamically in script -->
+          </select>
+        </div>
+
+        <!-- Custom Ka/Kb Slider (Visible only in Custom mode) -->
+        <div class="control-group" id="customKBox" style="display: none;">
+          <div class="control-label-row">
+            <span class="control-label" id="customKLabel">Custom Ka value:</span>
+            <span class="control-value" id="customKDisplay">1.0 × 10⁻⁵</span>
+          </div>
+          <!-- Slider represents exponent of K from -9 to -1 -->
+          <input type="range" class="sim-slider" id="customKSlider" min="-9" max="-1" step="0.1" value="-5" oninput="updateCustomK()">
+        </div>
+
+      </div>
+
+      <hr style="border:0; border-top: 1px solid rgba(255,255,255,0.08); margin: 5px 0;">
+
+      <!-- Show pH meter toggle -->
+      <div class="control-group">
+        <div class="control-label-row" style="font-size:0.95rem;">
+          <span class="control-label">Insert pH Probe</span>
+          <label class="switch">
+            <input type="checkbox" id="probeToggle" onchange="toggleProbe()">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Reset -->
+      <div class="btn-row">
+        <button class="btn btn-primary" style="grid-column: span 2;" onclick="resetSim()">Reset Simulation</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Theory Panel -->
+  <details class="theory-card">
+    <summary class="theory-summary">Theoretical Background & Formulas</summary>
+    <div class="theory-content">
+      <div>
+        <h4>Strong vs. Weak Acids and Bases</h4>
+        <p>
+          The strength of an acid or base refers to its ability to ionize or dissociate in water. It is not the same as concentration.
+        </p>
+        <ul class="theory-list">
+          <li><strong>Strong Acids/Bases:</strong> Dissociate completely (approx. 100%) in aqueous solution. For a strong monoprotic acid $HA$, the hydronium concentration is equal to the acid concentration ($[H_3O^+] = C_a$). Examples include $HCl$, $HNO_3$, and $NaOH$.</li>
+          <li><strong>Weak Acids/Bases:</strong> Dissociate only partially in water, establishing a dynamic chemical equilibrium. The vast majority of the molecules remain intact as unionized neutral particles. Examples include acetic acid ($CH_3COOH$) and ammonia ($NH_3$).</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Dissociation Constants (Ka and Kb)</h4>
+        <p>
+          The equilibrium constants for ionization of weak acids ($K_a$) and weak bases ($K_b$) quantify their relative strengths:
+        </p>
+        <div class="formula-box">
+          Ka = [H₃O⁺][A⁻] / [HA]
+          <span class="formula-explanation">For the reaction: HA + H₂O ⇌ H₃O⁺ + A⁻</span>
+        </div>
+        <div class="formula-box">
+          Kb = [BH⁺][OH⁻] / [B]
+          <span class="formula-explanation">For the reaction: B + H₂O ⇌ BH⁺ + OH⁻</span>
+        </div>
+      </div>
+
+      <div>
+        <h4>Solving for Ion Concentration (Quadratic Equation)</h4>
+        <p>
+          To find the concentration of hydronium ions ($x = [H_3O^+]$) generated by a weak acid at initial concentration $C$, we solve:
+          $$K_a = \frac{x^2}{C - x} \implies x^2 + K_a x - K_a C = 0$$
+          Using the quadratic formula, we extract the physically viable positive root:
+        </p>
+        <div class="formula-box">
+          x = [H₃O⁺] = (-Ka + √(Ka² + 4 · Ka · C)) / 2
+          <span class="formula-explanation">For weak bases, replacing Ka with Kb yields the hydroxide ion concentration: x = [OH⁻].</span>
+        </div>
+      </div>
+
+      <div>
+        <h4>Percent Dissociation</h4>
+        <p>
+          The percent dissociation ($\alpha$) measures the fraction of acid molecules that ionize, which decreases as the solution becomes more concentrated (Le Chatelier's Principle):
+        </p>
+        <div class="formula-box">
+          % Dissociation = ([A⁻] / C) × 100% = (x / C) × 100%
+        </div>
+      </div>
+    </div>
+  </details>
+
+</div>
+
+<script>
+  // --- Presets Data ---
+  const weakAcidPresets = [
+    { id: 'acetic', name: 'Acetic Acid (Ka = 1.8 × 10⁻⁵)', k: 1.8e-5 },
+    { id: 'formic', name: 'Formic Acid (Ka = 1.8 × 10⁻⁴)', k: 1.8e-4 },
+    { id: 'hydrofluoric', name: 'Hydrofluoric Acid (Ka = 6.8 × 10⁻⁴)', k: 6.8e-4 },
+    { id: 'custom', name: '-- Custom Acid Strength --', k: 1e-5 }
+  ];
+
+  const weakBasePresets = [
+    { id: 'ammonia', name: 'Ammonia (Kb = 1.8 × 10⁻⁵)', k: 1.8e-5 },
+    { id: 'methylamine', name: 'Methylamine (Kb = 4.4 × 10⁻⁴)', k: 4.4e-4 },
+    { id: 'pyridine', name: 'Pyridine (Kb = 1.7 × 10⁻⁹)', k: 1.7e-9 },
+    { id: 'custom', name: '-- Custom Base Strength --', k: 1e-5 }
+  ];
+
+  // --- Globals ---
+  let solutionType = 'strong_acid';
+  let concentration = 0.100; // in M
+  let kValue = 1.8e-5; // Ka or Kb
+  let isProbeInserted = false;
+
+  // Chemistry values
+  let valPh = 1.0;
+  let valPoh = 13.0;
+  let percentDiss = 100.0;
+  let valH3o = 0.1;
+  let valOh = 1e-13;
+
+  // Animation particles
+  let particles = [];
+  const canvas = document.getElementById('molecularCanvas');
+  const ctx = canvas.getContext('2d');
+  let animationId = null;
+
+  // Bouncing limits inside magnifying glass
+  const center_x = 125;
+  const center_y = 125;
+  const view_radius = 118;
+
+  // Setup canvas size
+  function resizeCanvas() {
+    canvas.width = 250;
+    canvas.height = 250;
+  }
+
+  // --- Particle Class ---
+  class Particle {
+    constructor(type, x, y) {
+      this.type = type; // 'HA', 'H3O', 'A', 'B', 'BH', 'OH', 'M', 'H2O'
+      this.x = x || center_x + (Math.random() - 0.5) * 100;
+      this.y = y || center_y + (Math.random() - 0.5) * 100;
+      
+      const speed = 1.2;
+      const angle = Math.random() * Math.PI * 2;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      
+      // Radius for physics
+      this.r = type === 'HA' ? 10 : (type === 'H3O' || type === 'OH' ? 6 : 8);
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // Circular boundary collision physics
+      const dx = this.x - center_x;
+      const dy = this.y - center_y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist + this.r > view_radius) {
+        const nx = dx / dist;
+        const ny = dy / dist;
+
+        // Reflect velocity: v = v - 2(v.n)n
+        const dot = this.vx * nx + this.vy * ny;
+        this.vx = this.vx - 2 * dot * nx;
+        this.vy = this.vy - 2 * dot * ny;
+
+        // Position adjustment on boundary
+        this.x = center_x + nx * (view_radius - this.r);
+        this.y = center_y + ny * (view_radius - this.r);
+      }
+    }
+
+    draw() {
+      ctx.save();
+      
+      if (this.type === 'HA') {
+        // Intact weak acid: Neutral Gray sphere + tiny Red sphere bonded
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#64748b';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(this.x + 8, this.y - 2, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.fill();
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('HA', this.x, this.y);
+      } 
+      else if (this.type === 'H3O') {
+        // Hydronium: Red sphere
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.fill();
+        ctx.shadowColor = 'rgba(239, 68, 68, 0.4)';
+        ctx.shadowBlur = 4;
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('H⁺', this.x, this.y);
+      } 
+      else if (this.type === 'A') {
+        // Acid Anion: Blue sphere
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#3b82f6';
+        ctx.fill();
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('A⁻', this.x, this.y);
+      }
+      else if (this.type === 'M') {
+        // Base Cation: Orange sphere
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#f97316';
+        ctx.fill();
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('M⁺', this.x, this.y);
+      }
+      else if (this.type === 'OH') {
+        // Hydroxide: Purple sphere
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#a855f7';
+        ctx.fill();
+        ctx.shadowColor = 'rgba(168, 85, 247, 0.4)';
+        ctx.shadowBlur = 4;
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 7px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('OH⁻', this.x, this.y - 0.5);
+      }
+      else if (this.type === 'B') {
+        // Intact weak base B: Light orange sphere
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#fdba74';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.stroke();
+        
+        ctx.fillStyle = '#0b130a';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('B', this.x, this.y);
+      }
+      else if (this.type === 'BH') {
+        // Protonated weak base BH+: Dark orange sphere
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#c2410c';
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.arc(this.x + 8, this.y - 2, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('BH⁺', this.x, this.y);
+      }
+      else if (this.type === 'H2O') {
+        // Water molecule: Vague faded gray-blue V shape representation
+        ctx.strokeStyle = 'rgba(251, 250, 245, 0.1)';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(this.x - 6, this.y - 3);
+        ctx.lineTo(this.x, this.y + 3);
+        ctx.lineTo(this.x + 6, this.y - 3);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+  }
+
+  // --- Particle Manager ---
+  function updateParticles() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw background texture
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw a subtle border inside circular lens
+    ctx.beginPath();
+    ctx.arc(center_x, center_y, view_radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Update and draw particles
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+  }
+
+  // Particle generator loop
+  function loop() {
+    updateParticles();
+    animationId = requestAnimationFrame(loop);
+  }
+
+  // Spawn dynamic numbers of particles based on dissociation math
+  function spawnParticles() {
+    particles = [];
+    
+    // Scale solute particle count based on log concentration
+    // Total groups is from 10 (at 0.001M) to 40 (at 1M)
+    const logVal = Math.log10(concentration); // -3 to 0
+    const totalGroups = Math.round(12 + 28 * (logVal + 3) / 3);
+
+    // Calculate count of dissociated vs undissociated
+    const alpha = percentDiss / 100.0;
+    const numDiss = Math.round(alpha * totalGroups);
+    const numIntact = totalGroups - numDiss;
+
+    // Fill with water molecules for background density
+    const numWater = 30;
+    for (let i = 0; i < numWater; i++) {
+      particles.push(new Particle('H2O'));
+    }
+
+    if (solutionType === 'strong_acid') {
+      // 100% Dissociated: H3O+ and A-
+      for (let i = 0; i < totalGroups; i++) {
+        particles.push(new Particle('H3O'));
+        particles.push(new Particle('A'));
+      }
+    } 
+    else if (solutionType === 'weak_acid') {
+      // Mixed: HA molecules and (H3O+, A-) pairs
+      for (let i = 0; i < numIntact; i++) {
+        particles.push(new Particle('HA'));
+      }
+      for (let i = 0; i < numDiss; i++) {
+        particles.push(new Particle('H3O'));
+        particles.push(new Particle('A'));
+      }
+    } 
+    else if (solutionType === 'strong_base') {
+      // 100% Dissociated: M+ and OH-
+      for (let i = 0; i < totalGroups; i++) {
+        particles.push(new Particle('M'));
+        particles.push(new Particle('OH'));
+      }
+    } 
+    else if (solutionType === 'weak_base') {
+      // Mixed: B molecules and (BH+, OH-) pairs
+      for (let i = 0; i < numIntact; i++) {
+        particles.push(new Particle('B'));
+      }
+      for (let i = 0; i < numDiss; i++) {
+        particles.push(new Particle('BH'));
+        particles.push(new Particle('OH'));
+      }
+    } 
+    else if (solutionType === 'water') {
+      // Only water molecules, and maybe a single autoionized pair to show autoionization
+      for (let i = 0; i < 40; i++) {
+        particles.push(new Particle('H2O'));
+      }
+      // Single rare pair
+      particles.push(new Particle('H3O'));
+      particles.push(new Particle('OH'));
+    }
+  }
+
+  // --- Computational Chemical Engine ---
+  
+  function solveEquilibrium() {
+    const Kw = 1e-14;
+
+    if (solutionType === 'strong_acid') {
+      valH3o = concentration;
+      valOh = Kw / valH3o;
+      percentDiss = 100.0;
+      valPh = -Math.log10(valH3o);
+      valPoh = 14.0 - valPh;
+    } 
+    else if (solutionType === 'strong_base') {
+      valOh = concentration;
+      valH3o = Kw / valOh;
+      percentDiss = 100.0;
+      valPoh = -Math.log10(valOh);
+      valPh = 14.0 - valPoh;
+    } 
+    else if (solutionType === 'weak_acid') {
+      // Solve: x^2 + K*x - K*C = 0
+      const Ka = kValue;
+      const x = (-Ka + Math.sqrt(Ka * Ka + 4 * Ka * concentration)) / 2;
+      valH3o = Math.max(1e-7, x); // Capped at pure water self-ionization
+      valOh = Kw / valH3o;
+      percentDiss = (x / concentration) * 100.0;
+      valPh = -Math.log10(valH3o);
+      valPoh = 14.0 - valPh;
+    } 
+    else if (solutionType === 'weak_base') {
+      // Solve: x^2 + K*x - K*C = 0
+      const Kb = kValue;
+      const x = (-Kb + Math.sqrt(Kb * Kb + 4 * Kb * concentration)) / 2;
+      valOh = Math.max(1e-7, x);
+      valH3o = Kw / valOh;
+      percentDiss = (x / concentration) * 100.0;
+      valPoh = -Math.log10(valOh);
+      valPh = 14.0 - valPoh;
+    } 
+    else if (solutionType === 'water') {
+      valH3o = 1e-7;
+      valOh = 1e-7;
+      percentDiss = 1.8e-7; // autoionization percent
+      valPh = 7.0;
+      valPoh = 7.0;
+    }
+
+    // Caps
+    if (valPh < 0) valPh = 0;
+    if (valPh > 14) valPh = 14;
+    if (valPoh < 0) valPoh = 0;
+    if (valPoh > 14) valPoh = 14;
+
+    updateUI();
+  }
+
+  // Helper exponent display
+  function toSuperscript(num) {
+    const superscripts = {
+      '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+      '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+      '-': '⁻', '.': '·'
+    };
+    return num.toString().split('').map(c => superscripts[c] || c).join('');
+  }
+
+  function formatScientific(val) {
+    const exp = Math.floor(Math.log10(val));
+    const base = val / Math.pow(10, exp);
+    if (Math.abs(base - 1) < 0.05) {
+      return `1.0 × 10${toSuperscript(exp)} `;
+    }
+    return `${base.toFixed(2)} × 10${toSuperscript(exp)} `;
+  }
+
+  function updateUI() {
+    document.getElementById('valPh').textContent = valPh.toFixed(2);
+    document.getElementById('valPoh').textContent = valPoh.toFixed(2);
+    document.getElementById('valDiss').innerHTML = percentDiss < 0.01 ? percentDiss.toExponential(2) + '<span class="value-unit">%</span>' : percentDiss.toFixed(2) + '<span class="value-unit">%</span>';
+    
+    document.getElementById('valH3o').innerHTML = formatScientific(valH3o) + '<span class="value-unit">M</span>';
+    document.getElementById('valOh').innerHTML = formatScientific(valOh) + '<span class="value-unit">M</span>';
+
+    // Update Beaker solution color (slightly acidic red, neutral green, basic purple)
+    const pHColors = [
+      { ph: 0, r: 239, g: 68, b: 68 },
+      { ph: 7, r: 34, g: 197, b: 94 },
+      { ph: 14, r: 168, g: 85, b: 247 }
+    ];
+    let low = pHColors[0], high = pHColors[2];
+    if (valPh <= 7) {
+      low = pHColors[0]; high = pHColors[1];
+    } else {
+      low = pHColors[1]; high = pHColors[2];
+    }
+    const range = high.ph - low.ph;
+    const ratio = (valPh - low.ph) / range;
+    const r = Math.round(low.r + ratio * (high.r - low.r));
+    const g = Math.round(low.g + ratio * (high.g - low.g));
+    const b = Math.round(low.b + ratio * (high.b - low.b));
+    document.getElementById('liquidFill').setAttribute('fill', `rgba(${r}, ${g}, ${b}, 0.45)`);
+
+    // Ratio display and Labels
+    const ratioLabel = document.getElementById('ratioLabel');
+    const valRatio = document.getElementById('valRatio');
+
+    if (solutionType.includes('acid')) {
+      ratioLabel.textContent = '[HA] : [A⁻] Ratio';
+      const haPercent = (100 - percentDiss).toFixed(0);
+      const aPercent = percentDiss.toFixed(0);
+      valRatio.textContent = `${haPercent}% : ${aPercent}%`;
+    } 
+    else if (solutionType.includes('base')) {
+      ratioLabel.textContent = '[B] : [BH⁺] Ratio';
+      const bPercent = (100 - percentDiss).toFixed(0);
+      const bhPercent = percentDiss.toFixed(0);
+      valRatio.textContent = `${bPercent}% : ${bhPercent}%`;
+    } 
+    else {
+      ratioLabel.textContent = '[H₂O] : Ions';
+      valRatio.textContent = '99.999% : 0%';
+    }
+
+    // Update probe readout if inserted
+    const probeReadout = document.getElementById('probeReadout');
+    probeReadout.textContent = valPh.toFixed(2);
+
+    // Update legends
+    updateLegend();
+
+    // Push data to hidden tags for trials log
+    document.getElementById('trialPh').textContent = valPh.toFixed(2);
+    document.getElementById('trialDissociation').textContent = percentDiss.toFixed(2) + '%';
+  }
+
+  function updateLegend() {
+    const box = document.getElementById('legendBox');
+    let html = '';
+    
+    const items = {
+      h2o: { name: 'H₂O (Water)', color: 'rgba(251,250,245,0.2)', type: 'water' },
+      h3o: { name: 'H₃O⁺ (Hydronium)', color: '#ef4444', type: 'single' },
+      oh: { name: 'OH⁻ (Hydroxide)', color: '#a855f7', type: 'single' },
+      ha: { name: 'HA (Weak Acid)', color1: '#64748b', color2: '#ef4444', type: 'double' },
+      a: { name: 'A⁻ (Acid Anion)', color: '#3b82f6', type: 'single' },
+      b: { name: 'B (Weak Base)', color: '#fdba74', type: 'single' },
+      bh: { name: 'BH⁺ (Base Cation)', color1: '#c2410c', color2: '#fff', type: 'double' },
+      m: { name: 'M⁺ (Base Cation)', color: '#f97316', type: 'single' }
+    };
+
+    if (solutionType === 'strong_acid') {
+      html += drawLegendItem(items.h2o);
+      html += drawLegendItem(items.h3o);
+      html += drawLegendItem(items.a);
+    } 
+    else if (solutionType === 'weak_acid') {
+      html += drawLegendItem(items.h2o);
+      html += drawLegendItem(items.ha);
+      html += drawLegendItem(items.h3o);
+      html += drawLegendItem(items.a);
+    } 
+    else if (solutionType === 'strong_base') {
+      html += drawLegendItem(items.h2o);
+      html += drawLegendItem(items.oh);
+      html += drawLegendItem(items.m);
+    } 
+    else if (solutionType === 'weak_base') {
+      html += drawLegendItem(items.h2o);
+      html += drawLegendItem(items.b);
+      html += drawLegendItem(items.bh);
+      html += drawLegendItem(items.oh);
+    } 
+    else {
+      html += drawLegendItem(items.h2o);
+      html += drawLegendItem(items.h3o);
+      html += drawLegendItem(items.oh);
+    }
+
+    box.innerHTML = html;
+  }
+
+  function drawLegendItem(item) {
+    if (item.type === 'single') {
+      return `
+        <div class="legend-item">
+          <span class="legend-dot" style="background-color: ${item.color};"></span>
+          <span>${item.name}</span>
+        </div>
+      `;
+    } 
+    else if (item.type === 'double') {
+      return `
+        <div class="legend-item">
+          <div class="legend-double-dot">
+            <span style="background-color: ${item.color1}; left: 0;"></span>
+            <span style="background-color: ${item.color2}; left: 6px; width: 6px; height: 6px; top: 2px;"></span>
+          </div>
+          <span style="margin-left: 2px;">${item.name}</span>
+        </div>
+      `;
+    }
+    else {
+      // Water V-shape
+      return `
+        <div class="legend-item">
+          <span style="font-size:0.9rem; line-height:1; color:rgba(251,250,245,0.4)">V</span>
+          <span>${item.name}</span>
+        </div>
+      `;
+    }
+  }
+
+  // --- Solution Control Selects ---
+  
+  function changeSolutionType() {
+    const typeSelect = document.getElementById('solTypeSelect');
+    solutionType = typeSelect.value;
+    
+    const strengthBox = document.getElementById('strengthBox');
+    const concControlGroup = document.getElementById('concControlGroup');
+    const presetSelect = document.getElementById('strengthPresetSelect');
+    const presetLabel = document.getElementById('strengthPresetLabel');
+
+    // Set hidden trials value
+    document.getElementById('trialSolType').textContent = typeSelect.options[typeSelect.selectedIndex].text;
+
+    if (solutionType === 'water') {
+      strengthBox.style.display = 'none';
+      concControlGroup.style.display = 'none';
+    } 
+    else {
+      concControlGroup.style.display = 'flex';
+      
+      if (solutionType === 'weak_acid') {
+        strengthBox.style.display = 'flex';
+        presetLabel.textContent = 'Acid Strength (Ka):';
+        populatePresets(weakAcidPresets);
+      } 
+      else if (solutionType === 'weak_base') {
+        strengthBox.style.display = 'flex';
+        presetLabel.textContent = 'Base Strength (Kb):';
+        populatePresets(weakBasePresets);
+      } 
+      else {
+        strengthBox.style.display = 'none';
+      }
+    }
+
+    changeStrengthPreset();
+  }
+
+  function populatePresets(list) {
+    const select = document.getElementById('strengthPresetSelect');
+    select.innerHTML = '';
+    list.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      opt.dataset.k = p.k;
+      select.appendChild(opt);
+    });
+  }
+
+  function changeStrengthPreset() {
+    const select = document.getElementById('strengthPresetSelect');
+    const customKBox = document.getElementById('customKBox');
+    const customLabel = document.getElementById('customKLabel');
+
+    if (!select.value) {
+      solveEquilibrium();
+      spawnParticles();
+      return;
+    }
+
+    if (select.value === 'custom') {
+      customKBox.style.display = 'flex';
+      customLabel.textContent = solutionType === 'weak_acid' ? 'Custom Ka value:' : 'Custom Kb value:';
+      
+      const slider = document.getElementById('customKSlider');
+      kValue = Math.pow(10, parseFloat(slider.value));
+      document.getElementById('customKDisplay').innerHTML = formatKScientific(kValue);
+    } 
+    else {
+      customKBox.style.display = 'none';
+      const opt = select.options[select.selectedIndex];
+      kValue = parseFloat(opt.dataset.k);
+    }
+
+    solveEquilibrium();
+    spawnParticles();
+  }
+
+  function updateConcentration() {
+    const slider = document.getElementById('concSlider');
+    concentration = Math.pow(10, parseFloat(slider.value));
+    
+    // Display updates
+    document.getElementById('concValDisplay').textContent = `${concentration.toFixed(3)} M`;
+    document.getElementById('trialConc').textContent = `${concentration.toFixed(3)} M`;
+
+    solveEquilibrium();
+    spawnParticles();
+  }
+
+  function updateCustomK() {
+    const slider = document.getElementById('customKSlider');
+    kValue = Math.pow(10, parseFloat(slider.value));
+    
+    document.getElementById('customKDisplay').innerHTML = formatKScientific(kValue);
+    
+    solveEquilibrium();
+    spawnParticles();
+  }
+
+  function formatKScientific(val) {
+    const exp = Math.round(Math.log10(val));
+    return `1.0 × 10${toSuperscript(exp)}`;
+  }
+
+  // Probe insert toggle
+  function toggleProbe() {
+    const toggle = document.getElementById('probeToggle');
+    const probe = document.getElementById('phProbe');
+    
+    isProbeInserted = toggle.checked;
+    
+    if (isProbeInserted) {
+      probe.classList.add('inserted');
+    } else {
+      probe.classList.remove('inserted');
+    }
+  }
+
+  // --- Reset/Init ---
+  function resetSim() {
+    // Controls default
+    document.getElementById('solTypeSelect').value = 'strong_acid';
+    document.getElementById('concSlider').value = '-1';
+    document.getElementById('probeToggle').checked = false;
+    
+    solutionType = 'strong_acid';
+    concentration = 0.100;
+    
+    document.getElementById('concValDisplay').textContent = '0.100 M';
+    document.getElementById('trialConc').textContent = '0.100 M';
+    
+    toggleProbe();
+    changeSolutionType();
+  }
+
+  // Initialize
+  window.addEventListener('load', () => {
+    resizeCanvas();
+    changeSolutionType();
+    loop();
+  });
+
+</script>
+
+</body>
+</html>

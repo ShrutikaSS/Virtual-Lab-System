@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive Reactions & Rates Kinetics Simulation — Zeal Virtual Lab">
+  <title>Reactions & Rates — Chemistry Virtual Lab</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0a0e17 0%, #131826 100%);
+      --panel-bg: rgba(23, 29, 46, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent-color: #22c55e; /* Green accent */
+      --accent-glow: rgba(34, 197, 94, 0.35);
+      --text-primary: #fbFAF5;
+      --text-secondary: #8e9bb8;
+      --font-display: 'Space Grotesk', 'Inter', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #22c55e;
+      --neutral: #94a3b8;
+
+      --react-a: #f97316; /* Orange */
+      --react-b: #a855f7; /* Purple */
+      --product-c: #22c55e; /* Green */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0a0e17;
+      background-image: var(--bg-gradient);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .lab-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header Title Bar */
+    .lab-header {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .lab-title-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lab-badge {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--accent-color);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .lab-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    .glow-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-color);
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.4; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+
+    /* Main Workspace Grid */
+    .lab-workspace {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .lab-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Visualizer Panel */
+    .visualizer-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .canvas-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    /* Simulation Workbench */
+    .sim-canvas-container {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      background: rgba(10, 14, 23, 0.6);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* Dynamic particle collision canvas */
+    #reactionCanvas {
+      background: transparent;
+      display: block;
+      border-right: 2px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* Compression barrier graphic */
+    .compression-wall {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: #4b5563;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      z-index: 2;
+    }
+
+    /* Legend Overlay */
+    .particles-legend {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.72rem;
+      display: flex;
+      gap: 12px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Data card */
+    .data-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 15px;
+    }
+
+    .data-item {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .data-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .data-value {
+      font-family: var(--font-mono);
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .value-unit {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: normal;
+      margin-left: 2px;
+    }
+
+    /* Kinetics plot card */
+    .plot-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .plot-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .plot-container {
+      width: 100%;
+      height: 180px;
+      display: block;
+    }
+
+    /* Right Controls Panel */
+    .controls-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .control-section-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+      color: var(--accent-color);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .control-label {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .control-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    /* Input sliders */
+    .sim-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .sim-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      box-shadow: 0 0 6px var(--accent-glow);
+      transition: transform 0.1s;
+    }
+
+    .sim-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Catalyst Toggle row */
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 5px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255,255,255,0.1);
+      transition: .3s;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--text-secondary);
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--accent-color);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+      background-color: #0b130a;
+    }
+
+    /* Buttons block */
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 12px;
+      border-radius: 10px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      user-select: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-color);
+      color: #0b130a;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: #4ade80;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Theory collapsible panel */
+    .theory-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      margin-top: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .theory-summary {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 18px 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      color: var(--accent-color);
+    }
+
+    .theory-summary::after {
+      content: '▼';
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .theory-card[open] .theory-summary::after {
+      transform: rotate(180deg);
+    }
+
+    .theory-content {
+      padding: 0 24px 24px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .theory-content h4 {
+      font-family: var(--font-display);
+      color: var(--text-primary);
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    .formula-box {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-family: var(--font-mono);
+      color: var(--accent-color);
+      font-size: 1.05rem;
+      border-left: 3px solid var(--accent-color);
+      margin: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .formula-explanation {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+    }
+
+    .theory-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-left: 5px;
+    }
+
+    .theory-list li {
+      position: relative;
+      padding-left: 18px;
+    }
+
+    .theory-list li::before {
+      content: '•';
+      color: var(--accent-color);
+      position: absolute;
+      left: 0;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="lab-container">
+  
+  <!-- Header Bar -->
+  <header class="lab-header">
+    <div class="lab-title-group">
+      <span class="lab-badge">CHEMISTRY</span>
+      <h1 class="lab-title">Reactions & Rates</h1>
+    </div>
+    <div class="status-indicator">
+      <span class="glow-dot"></span>
+      <span class="mono">SYSTEM ACTIVE</span>
+    </div>
+  </header>
+
+  <!-- Workspace Grid -->
+  <div class="lab-workspace">
+    
+    <!-- Left Column: Collision visualizer, data panel, live kinetics chart -->
+    <div class="visualizer-panel">
+      
+      <!-- Collision Chamber visualizer card -->
+      <div class="canvas-card">
+        
+        <div class="particles-legend">
+          <div class="legend-item">
+            <span class="legend-dot" style="background-color: var(--react-a);"></span>
+            <span>Reactant A</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background-color: var(--react-b);"></span>
+            <span>Reactant B</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background-color: var(--product-c);"></span>
+            <span>Product C</span>
+          </div>
+        </div>
+
+        <div class="sim-canvas-container" id="chamberContainer">
+          <!-- Canvas drawing area -->
+          <canvas id="reactionCanvas"></canvas>
+          <!-- Compression barrier wall visual -->
+          <div id="compressionWall" class="compression-wall"></div>
+        </div>
+      </div>
+
+      <!-- Live Data panel -->
+      <div class="data-card">
+        <h3 class="plot-title">Kinetics Readouts</h3>
+        
+        <!-- Target elements for trials logging -->
+        <span id="trialTemp" style="display: none;">300 K</span>
+        <span id="trialCatalyst" style="display: none;">Inactive</span>
+        <span id="trialVolume" style="display: none;">100%</span>
+        <span id="trialRate" style="display: none;">0.00 M/s</span>
+
+        <div class="data-grid">
+          <div class="data-item">
+            <span class="data-label">Reactant A Count</span>
+            <span class="data-value" id="valCountA" style="color: var(--react-a);">20</span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">Reactant B Count</span>
+            <span class="data-value" id="valCountB" style="color: var(--react-b);">20</span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">Product C Count</span>
+            <span class="data-value" id="valCountC" style="color: var(--product-c);">0</span>
+          </div>
+          <div class="data-item">
+            <span class="data-label">Reaction Rate</span>
+            <span class="data-value" id="valRate">0.00<span class="value-unit">particles/s</span></span>
+          </div>
+          <div class="data-item" style="grid-column: span 2;">
+            <span class="data-label">Reaction Completion Progress</span>
+            <span class="data-value" id="valProgress">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Kinetics Curve Chart (Chart.js) -->
+      <div class="plot-card">
+        <h3 class="plot-title">Live Concentration vs Time (Kinetics Curve)</h3>
+        <div class="plot-container">
+          <canvas id="kineticsChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Panel Controls -->
+    <div class="controls-panel">
+      <h2 class="control-section-title">Reaction Conditions</h2>
+      
+      <!-- Reactant A Initial Count -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <span class="control-label">Reactant A (Orange):</span>
+          <span class="control-value" id="valSliderA" style="color: var(--react-a);">20</span>
+        </div>
+        <input type="range" class="sim-slider" id="sliderA" min="5" max="40" value="20" onchange="adjustReactants()">
+      </div>
+
+      <!-- Reactant B Initial Count -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <span class="control-label">Reactant B (Purple):</span>
+          <span class="control-value" id="valSliderB" style="color: var(--react-b);">20</span>
+        </div>
+        <input type="range" class="sim-slider" id="sliderB" min="5" max="40" value="20" onchange="adjustReactants()">
+      </div>
+
+      <!-- Temperature Slider -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <span class="control-label">Temperature:</span>
+          <span class="control-value" id="valSliderTemp">300 K</span>
+        </div>
+        <input type="range" class="sim-slider" id="sliderTemp" min="100" max="600" step="10" value="300" oninput="updateTemperature()">
+      </div>
+
+      <!-- Volume Slider -->
+      <div class="control-group">
+        <div class="control-label-row">
+          <span class="control-label">Chamber Volume:</span>
+          <span class="control-value" id="valSliderVolume">100%</span>
+        </div>
+        <input type="range" class="sim-slider" id="sliderVolume" min="40" max="100" step="5" value="100" oninput="updateVolume()">
+      </div>
+
+      <!-- Catalyst Toggle -->
+      <div class="toggle-row">
+        <span class="control-label">Add Catalyst (Lower Ea)</span>
+        <label class="switch">
+          <input type="checkbox" id="catalystToggle" onchange="toggleCatalyst()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 5px 0;">
+
+      <!-- Actions Buttons -->
+      <div class="btn-row">
+        <button class="btn btn-primary" id="playBtn" onclick="togglePlay()">Pause</button>
+        <button class="btn btn-secondary" onclick="resetSim()">Reset</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Theory Panel -->
+  <details class="theory-card">
+    <summary class="theory-summary">Theoretical Background & Formulas</summary>
+    <div class="theory-content">
+      <div>
+        <h4>Collision Theory</h4>
+        <p>
+          Chemical reactions occur when reactant particles collide with one another. According to **Collision Theory**, a collision will only result in a chemical reaction (a "successful" collision) if:
+        </p>
+        <ul class="theory-list">
+          <li><strong>Energy:</strong> The colliding particles possess combined kinetic energy greater than or equal to a minimum threshold, known as the **Activation Energy ($E_a$)**.</li>
+          <li><strong>Orientation:</strong> The particles collide in a correct spatial orientation (simplified to energy threshold in this simulation).</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Factors Affecting Reaction Rates</h4>
+        <p>
+          The rate of a chemical reaction is defined as the change in concentration of a reactant or product per unit time. It can be modified by:
+        </p>
+        <ul class="theory-list">
+          <li><strong>Concentration (Quantity):</strong> Increasing the initial particle count leads to more crowded conditions, directly increasing the collision frequency.</li>
+          <li><strong>Volume (Pressure):</strong> Compressing the chamber decreases the space particles occupy, forcing them closer together and raising the frequency of collisions.</li>
+          <li><strong>Temperature:</strong> Raising the temperature increases the average kinetic energy of the particles. According to the Maxwell-Boltzmann distribution, this increases:
+            <br>&bull; The *speed* of particles (thus collision frequency).
+            <br>&bull; The *fraction* of collisions that exceed the activation energy.
+          </li>
+          <li><strong>Catalysts:</strong> A catalyst provides an alternative reaction pathway with a **lower activation energy ($E_a$)**. It increases the reaction rate without being consumed.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Arrhenius Concept & Rate Law</h4>
+        <p>
+          The temperature dependence of the rate constant $k$ is given by the Arrhenius equation:
+          $$k = A \cdot e^{-E_a / RT}$$
+          The rate of reaction for $A + B \rightarrow C$ is modeled qualitatively by:
+        </p>
+        <div class="formula-box">
+          Rate = k · [A] · [B]
+          <span class="formula-explanation">Where [A] and [B] are reactant concentrations. The rate decreases over time as A and B are consumed, which is represented by the leveling-off of the curves.</span>
+        </div>
+      </div>
+    </div>
+  </details>
+
+</div>
+
+<script>
+  // --- Particle Class ---
+  class Particle {
+    constructor(type, x, y, speedFactor) {
+      this.type = type; // 'A' (orange), 'B' (purple), 'C' (green)
+      this.r = 7; // particle radius
+      this.x = x;
+      this.y = y;
+      
+      const angle = Math.random() * Math.PI * 2;
+      const velocity = (1.5 + Math.random() * 1.5) * speedFactor;
+      this.vx = Math.cos(angle) * velocity;
+      this.vy = Math.sin(angle) * velocity;
+    }
+
+    update(activeW, activeH) {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // Bounce off boundaries
+      if (this.x - this.r < 0) {
+        this.vx = -this.vx;
+        this.x = this.r;
+      }
+      if (this.x + this.r > activeW) {
+        this.vx = -this.vx;
+        this.x = activeW - this.r;
+      }
+      if (this.y - this.r < 0) {
+        this.vy = -this.vy;
+        this.y = this.r;
+      }
+      if (this.y + this.r > activeH) {
+        this.vy = -this.vy;
+        this.y = activeH - this.r;
+      }
+    }
+
+    draw(ctx) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      if (this.type === 'A') {
+        ctx.fillStyle = '#f97316';
+        ctx.shadowColor = 'rgba(249, 115, 22, 0.4)';
+      } else if (this.type === 'B') {
+        ctx.fillStyle = '#a855f7';
+        ctx.shadowColor = 'rgba(168, 85, 247, 0.4)';
+      } else {
+        ctx.fillStyle = '#22c55e';
+        ctx.shadowColor = 'rgba(34, 197, 94, 0.5)';
+      }
+      ctx.shadowBlur = 6;
+      ctx.fill();
+      ctx.shadowBlur = 0; // reset
+    }
+  }
+
+  // --- Flash Animation Effect Class ---
+  class ReactionFlash {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.maxR = 20;
+      this.r = 6;
+      this.opacity = 0.8;
+      this.active = true;
+    }
+
+    update() {
+      this.r += 1.2;
+      this.opacity -= 0.05;
+      if (this.opacity <= 0 || this.r >= this.maxR) {
+        this.active = false;
+      }
+    }
+
+    draw(ctx) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(34, 197, 94, ${this.opacity})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity * 0.4})`;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // --- Globals ---
+  let particles = [];
+  let flashes = [];
+  let initA = 20;
+  let initB = 20;
+  let temperature = 300; // in Kelvin
+  let volume = 100; // in %
+  let catalyst = false;
+
+  let totalA = 20;
+  let totalB = 20;
+  let totalC = 0;
+  let isPlaying = true;
+  let animationId = null;
+
+  const canvas = document.getElementById('reactionCanvas');
+  const ctx = canvas.getContext('2d');
+  const container = document.getElementById('chamberContainer');
+
+  // Chart globals
+  let chart = null;
+  let chartTime = 0;
+  const chartInterval = 0.5; // sample counts every 0.5 seconds
+  let chartTimer = 0;
+
+  // Rate rolling window tracker
+  let rateWindow = []; // array of { time, countC }
+  const rollingWindowSec = 1.5;
+
+  // Resize canvas handler
+  function initChamber() {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+  }
+
+  // Speed multiplier derived from Temp
+  function getSpeedFactor() {
+    // Proportional to sqrt(T)
+    return Math.sqrt(temperature / 300.0);
+  }
+
+  // Set up particle pool
+  function setupSimulation() {
+    particles = [];
+    flashes = [];
+    totalA = initA;
+    totalB = initB;
+    totalC = 0;
+
+    const activeW = canvas.width * (volume / 100.0);
+    const activeH = canvas.height;
+    const sf = getSpeedFactor();
+
+    // Spawn reactant A
+    for (let i = 0; i < totalA; i++) {
+      const rx = 10 + Math.random() * (activeW - 20);
+      const ry = 10 + Math.random() * (activeH - 20);
+      particles.push(new Particle('A', rx, ry, sf));
+    }
+    // Spawn reactant B
+    for (let i = 0; i < totalB; i++) {
+      const rx = 10 + Math.random() * (activeW - 20);
+      const ry = 10 + Math.random() * (activeH - 20);
+      particles.push(new Particle('B', rx, ry, sf));
+    }
+
+    // Reset readouts
+    document.getElementById('valCountA').textContent = totalA;
+    document.getElementById('valCountB').textContent = totalB;
+    document.getElementById('valCountC').textContent = totalC;
+    document.getElementById('valProgress').textContent = '0%';
+    document.getElementById('valRate').innerHTML = '0.00 <span class="value-unit">particles/s</span>';
+
+    // Reset chart
+    chartTime = 0;
+    chartTimer = 0;
+    rateWindow = [{ time: 0, countC: 0 }];
+    if (chart) {
+      chart.data.labels = [0];
+      chart.data.datasets[0].data = [initA];
+      chart.data.datasets[1].data = [initB];
+      chart.data.datasets[2].data = [0];
+      chart.update();
+    }
+  }
+
+  // Adjust sliders
+  function adjustReactants() {
+    initA = parseInt(document.getElementById('sliderA').value);
+    initB = parseInt(document.getElementById('sliderB').value);
+    
+    document.getElementById('valSliderA').textContent = initA;
+    document.getElementById('valSliderB').textContent = initB;
+
+    setupSimulation();
+  }
+
+  function updateTemperature() {
+    temperature = parseInt(document.getElementById('sliderTemp').value);
+    document.getElementById('valSliderTemp').textContent = `${temperature} K`;
+    document.getElementById('trialTemp').textContent = `${temperature} K`;
+
+    // Scale current particles' velocity
+    const sf = getSpeedFactor();
+    particles.forEach(p => {
+      const angle = Math.atan2(p.vy, p.vx);
+      const speed = (1.5 + Math.random() * 1.5) * sf;
+      p.vx = Math.cos(angle) * speed;
+      p.vy = Math.sin(angle) * speed;
+    });
+  }
+
+  function updateVolume() {
+    volume = parseInt(document.getElementById('sliderVolume').value);
+    document.getElementById('valSliderVolume').textContent = `${volume}%`;
+    document.getElementById('trialVolume').textContent = `${volume}%`;
+
+    // Adjust visual compression wall position
+    const activeW = canvas.width * (volume / 100.0);
+    document.getElementById('compressionWall').style.left = activeW + 'px';
+
+    // For any particles that are now outside the new boundary, pull them in
+    particles.forEach(p => {
+      if (p.x + p.r > activeW) {
+        p.x = activeW - p.r - 2;
+        p.vx = -Math.abs(p.vx);
+      }
+    });
+  }
+
+  function toggleCatalyst() {
+    catalyst = document.getElementById('catalystToggle').checked;
+    document.getElementById('trialCatalyst').textContent = catalyst ? 'Active' : 'Inactive';
+  }
+
+  // --- Animation loop & physics engine ---
+  
+  function updatePhysics() {
+    const activeW = canvas.width * (volume / 100.0);
+    const activeH = canvas.height;
+
+    // 1. Move all particles
+    particles.forEach(p => p.update(activeW, activeH));
+
+    // 2. Check collision between all pairs of particles
+    let reactedPairs = []; // Indices of particles that underwent reaction
+    
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const p1 = particles[i];
+        const p2 = particles[j];
+        
+        // Skip if either has already reacted in this frame
+        if (reactedPairs.includes(i) || reactedPairs.includes(j)) continue;
+
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const minDist = p1.r + p2.r;
+
+        if (dist < minDist) {
+          // Collision overlap detected
+          
+          // Check if Reactant A + Reactant B reaction can happen
+          if ((p1.type === 'A' && p2.type === 'B') || (p1.type === 'B' && p1.type !== p2.type)) {
+            
+            // Relative speed squared represents collision kinetic energy
+            const relVx = p2.vx - p1.vx;
+            const relVy = p2.vy - p1.vy;
+            const kineticEnergy = 0.5 * (relVx * relVx + relVy * relVy);
+
+            // Ea Threshold: lower with catalyst
+            const Ea = catalyst ? 2.5 : 12.0;
+
+            if (kineticEnergy >= Ea) {
+              // React!
+              reactedPairs.push(i, j);
+              
+              // Spawn Reaction Flash Animation
+              const midX = (p1.x + p2.x) / 2;
+              const midY = (p1.y + p2.y) / 2;
+              flashes.push(new ReactionFlash(midX, midY));
+
+              // Convert one into Product C, remove the other
+              p1.type = 'C';
+              // Move Product C slightly to midpoint
+              p1.x = midX;
+              p1.y = midY;
+              // Recalculate random velocity for product
+              const sf = getSpeedFactor();
+              const angle = Math.random() * Math.PI * 2;
+              const speed = (1.5 + Math.random() * 1.5) * sf;
+              p1.vx = Math.cos(angle) * speed;
+              p1.vy = Math.sin(angle) * speed;
+
+              // Mark second reactant for removal
+              p2.markedForRemoval = true;
+            } 
+            else {
+              // Elastic bounce
+              resolveElasticBounce(p1, p2, dx, dy, dist);
+            }
+          } 
+          else {
+            // Elastic bounce between non-reactive types (A-A, B-B, C-C, etc.)
+            resolveElasticBounce(p1, p2, dx, dy, dist);
+          }
+        }
+      }
+    }
+
+    // Remove reacted second particles
+    particles = particles.filter(p => !p.markedForRemoval);
+
+    // 3. Update active flashes
+    flashes.forEach(f => f.update());
+    flashes = flashes.filter(f => f.active);
+
+    // 4. Update data readouts
+    totalA = particles.filter(p => p.type === 'A').length;
+    totalB = particles.filter(p => p.type === 'B').length;
+    totalC = particles.filter(p => p.type === 'C').length;
+
+    document.getElementById('valCountA').textContent = totalA;
+    document.getElementById('valCountB').textContent = totalB;
+    document.getElementById('valCountC').textContent = totalC;
+
+    // Progress completion percent: based on initial total stoichiometry limit
+    const minInit = Math.min(initA, initB);
+    const progressPercent = minInit === 0 ? 0 : Math.round((totalC / minInit) * 100);
+    document.getElementById('valProgress').textContent = progressPercent + '%';
+
+    // 5. Draw everything
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw particles
+    particles.forEach(p => p.draw(ctx));
+    // Draw flashes
+    flashes.forEach(f => f.draw(ctx));
+  }
+
+  // 2D Elastic circular collision response
+  function resolveElasticBounce(p1, p2, dx, dy, dist) {
+    const nx = dx / dist;
+    const ny = dy / dist;
+
+    // Relative velocity
+    const rvx = p1.vx - p2.vx;
+    const rvy = p1.vy - p2.vy;
+
+    // Velocity along normal
+    const velAlongNormal = rvx * nx + rvy * ny;
+
+    // Only resolve if moving towards each other
+    if (velAlongNormal > 0) {
+      // Elastic impulse scalar
+      const impulse = velAlongNormal;
+
+      p1.vx -= impulse * nx;
+      p1.vy -= impulse * ny;
+      p2.vx += impulse * nx;
+      p2.vy += impulse * ny;
+
+      // Push apart to resolve overlapping
+      const overlap = (p1.r + p2.r) - dist;
+      p1.x -= nx * (overlap / 2);
+      p1.y -= ny * (overlap / 2);
+      p2.x += nx * (overlap / 2);
+      p2.y += ny * (overlap / 2);
+    }
+  }
+
+  // --- Kinetics Rate calculations & sampling ---
+  
+  function updateKineticsCalculations(dt) {
+    // Add sample for reaction rate calculation
+    const timeNow = chartTime + dt;
+    rateWindow.push({ time: timeNow, countC: totalC });
+
+    // Clean up window: remove items older than rollingWindowSec
+    const limit = timeNow - rollingWindowSec;
+    rateWindow = rateWindow.filter(pt => pt.time >= limit);
+
+    // Compute delta Product C over window
+    if (rateWindow.length >= 2) {
+      const first = rateWindow[0];
+      const last = rateWindow[rateWindow.length - 1];
+      const dT = last.time - first.time;
+      const dC = last.countC - first.countC;
+      
+      const rate = dT > 0 ? dC / dT : 0;
+      document.getElementById('valRate').innerHTML = `${rate.toFixed(2)} <span class="value-unit">particles/s</span>`;
+      document.getElementById('trialRate').textContent = `${rate.toFixed(2)} M/s`;
+    }
+  }
+
+  // Core loop
+  function loop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    const dt = (timestamp - lastTime) / 1000.0;
+    lastTime = timestamp;
+
+    if (isPlaying) {
+      updatePhysics();
+      
+      // Accumulate time for chart sampler
+      chartTimer += dt;
+      chartTime += dt;
+      
+      updateKineticsCalculations(dt);
+
+      if (chartTimer >= chartInterval) {
+        chartTimer = 0;
+        // Sample counts to Chart.js kinetics curves
+        if (chart) {
+          chart.data.labels.push(chartTime.toFixed(1));
+          chart.data.datasets[0].data.push(totalA);
+          chart.data.datasets[1].data.push(totalB);
+          chart.data.datasets[2].data.push(totalC);
+          
+          // Truncate left side of chart if it goes too long to keep it legible
+          if (chart.data.labels.length > 40) {
+            chart.data.labels.shift();
+            chart.data.datasets[0].data.shift();
+            chart.data.datasets[1].data.shift();
+            chart.data.datasets[2].data.shift();
+          }
+          chart.update('none'); // silent update
+        }
+      }
+    } else {
+      // Just redraw, no physics update
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => p.draw(ctx));
+      flashes.forEach(f => f.draw(ctx));
+    }
+
+    animationId = requestAnimationFrame(loop);
+  }
+
+  let lastTime = null;
+
+  // Play Pause control
+  function togglePlay() {
+    isPlaying = !isPlaying;
+    const btn = document.getElementById('playBtn');
+    btn.textContent = isPlaying ? 'Pause' : 'Resume';
+    if (isPlaying) {
+      btn.style.backgroundColor = 'var(--accent-color)';
+      btn.style.color = '#0b130a';
+      btn.style.setProperty('--accent-glow', 'var(--accent-glow)');
+    } else {
+      btn.style.backgroundColor = 'rgba(255,255,255,0.05)';
+      btn.style.color = 'var(--text-primary)';
+      btn.style.setProperty('--accent-glow', 'none');
+    }
+  }
+
+  // Reset simulation
+  function resetSim() {
+    isPlaying = true;
+    lastTime = null;
+    const btn = document.getElementById('playBtn');
+    btn.textContent = 'Pause';
+    btn.style.backgroundColor = 'var(--accent-color)';
+    btn.style.color = '#0b130a';
+    btn.style.setProperty('--accent-glow', 'var(--accent-glow)');
+
+    // Reset controls
+    document.getElementById('sliderA').value = 20;
+    document.getElementById('sliderB').value = 20;
+    document.getElementById('sliderTemp').value = 300;
+    document.getElementById('sliderVolume').value = 100;
+    document.getElementById('catalystToggle').checked = false;
+
+    initA = 20;
+    initB = 20;
+    temperature = 300;
+    volume = 100;
+    catalyst = false;
+
+    document.getElementById('valSliderA').textContent = 20;
+    document.getElementById('valSliderB').textContent = 20;
+    document.getElementById('valSliderTemp').textContent = '300 K';
+    document.getElementById('valSliderVolume').textContent = '100%';
+    document.getElementById('compressionWall').style.left = canvas.width + 'px';
+
+    setupSimulation();
+  }
+
+  // --- Chart.js Kinetics Plot Setup ---
+  function initKineticsChart() {
+    if (typeof Chart === 'undefined') {
+      console.warn("Chart.js is not loaded.");
+      document.getElementById('kineticsChart').outerHTML = '<div style="color: var(--text-secondary); text-align: center; padding-top: 50px; font-family: var(--font-display);">Kinetics Chart requires an internet connection to load Chart.js.</div>';
+      return;
+    }
+    const ctx = document.getElementById('kineticsChart').getContext('2d');
+    
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [0],
+        datasets: [
+          {
+            label: 'Reactant A',
+            data: [initA],
+            borderColor: '#f97316',
+            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+            borderWidth: 2,
+            tension: 0.25,
+            pointRadius: 0
+          },
+          {
+            label: 'Reactant B',
+            data: [initB],
+            borderColor: '#a855f7',
+            backgroundColor: 'rgba(168, 85, 247, 0.1)',
+            borderWidth: 2,
+            tension: 0.25,
+            pointRadius: 0
+          },
+          {
+            label: 'Product C',
+            data: [0],
+            borderColor: '#22c55e',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            borderWidth: 2.5,
+            tension: 0.25,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#8e9bb8',
+              font: {
+                fontFamily: 'Space Grotesk',
+                size: 10
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            },
+            ticks: {
+              color: '#8e9bb8',
+              font: {
+                fontFamily: 'IBM Plex Mono',
+                size: 9
+              }
+            },
+            title: {
+              display: true,
+              text: 'Time (s)',
+              color: '#8e9bb8',
+              font: {
+                fontFamily: 'Space Grotesk',
+                size: 10
+              }
+            }
+          },
+          y: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)'
+            },
+            ticks: {
+              color: '#8e9bb8',
+              font: {
+                fontFamily: 'IBM Plex Mono',
+                size: 9
+              }
+            },
+            title: {
+              display: true,
+              text: 'Particle Count',
+              color: '#8e9bb8',
+              font: {
+                fontFamily: 'Space Grotesk',
+                size: 10
+              }
+            },
+            min: 0,
+            max: 42
+          }
+        }
+      }
+    });
+  }
+
+  // On Load Setup
+  window.addEventListener('load', () => {
+    initChamber();
+    initKineticsChart();
+    resetSim();
+    requestAnimationFrame(loop);
+  });
+
+  // Resize handler
+  window.addEventListener('resize', () => {
+    initChamber();
+    updateVolume();
+  });
+
+</script>
+
+</body>
+</html>

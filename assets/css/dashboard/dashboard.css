@@ -244,6 +244,10 @@ button {
   background: var(--electrical);
 }
 
+.nav-item[data-view="simulations"] .nav-dot {
+  background: var(--physics);
+}
+
 .nav-item[data-view="profile"] .nav-dot {
   background: var(--ink-soft);
 }
@@ -268,6 +272,10 @@ button {
 
 .nav-item[data-view="elec"].active {
   border-left-color: var(--electrical);
+}
+
+.nav-item[data-view="simulations"].active {
+  border-left-color: var(--physics);
 }
 
 .nav-item[data-view="profile"].active {
@@ -1415,6 +1423,10 @@ button {
 
   .nav-item[data-view="elec"].active {
     border-bottom-color: var(--electrical);
+  }
+
+  .nav-item[data-view="simulations"].active {
+    border-bottom-color: var(--physics);
   }
 
   .nav-item[data-view="profile"].active {

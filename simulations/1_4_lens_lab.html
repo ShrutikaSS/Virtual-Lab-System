@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive Geometric Optics Lens Lab Simulation — Zeal Virtual Lab">
+  <title>Geometric Optics — Lens Lab | Physics Virtual Lab</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0a0e17 0%, #131826 100%);
+      --panel-bg: rgba(23, 29, 46, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent-color: #3b82f6; /* Accent Blue */
+      --accent-glow: rgba(59, 130, 246, 0.35);
+      --text-primary: #fbFAF5;
+      --text-secondary: #8e9bb8;
+      --font-display: 'Space Grotesk', 'Inter', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0a0e17;
+      background-image: var(--bg-gradient);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .lab-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header Title Bar */
+    .lab-header {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .lab-title-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lab-badge {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-color);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .lab-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .glow-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-color);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-color);
+      animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.4; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+
+    /* Main Workspace Grid */
+    .lab-workspace {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .lab-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Visualizer Panel */
+    .visualizer-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .canvas-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 16px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      background: rgba(10, 14, 23, 0.85);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Live Data Readouts Card */
+    .data-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+    }
+
+    .data-item {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .data-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .data-value {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .value-unit {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: normal;
+      margin-left: 2px;
+    }
+
+    /* Controls Panel */
+    .controls-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .control-section-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+      color: var(--accent-color);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .control-label {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .control-readout {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      background: rgba(59, 130, 246, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Sliders styling */
+    .slider-input {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+      transition: background 0.3s;
+    }
+
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--accent-glow);
+      transition: transform 0.1s;
+    }
+
+    .slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    /* Select Inputs */
+    .select-input {
+      width: 100%;
+      background: rgba(10, 14, 23, 0.8);
+      border: 1px solid var(--panel-border);
+      color: var(--text-primary);
+      padding: 10px;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    .select-input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Buttons styling */
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-color);
+      color: var(--text-primary);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .helper-text {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    /* Collapsible Theory Panel */
+    .theory-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      margin-top: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .theory-summary {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 18px 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      color: var(--accent-color);
+    }
+
+    .theory-summary::after {
+      content: '▼';
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .theory-card[open] .theory-summary::after {
+      transform: rotate(180deg);
+    }
+
+    .theory-content {
+      padding: 0 24px 24px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .theory-content h4 {
+      font-family: var(--font-display);
+      color: var(--text-primary);
+      font-size: 1rem;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    .formula-box {
+      background: rgba(10, 14, 23, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      margin: 8px 0;
+    }
+
+    .formula-explanation {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-align: left;
+      margin-top: 6px;
+      display: block;
+    }
+
+    /* Hidden elements for dashboard integration compatibility */
+    .hidden-dashboard-data {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden elements for dashboard integration compatibility -->
+  <div class="hidden-dashboard-data">
+    <span id="trialLensType">Convex</span>
+    <span id="trialFocalLength">20.0 cm</span>
+    <span id="trialObjectDist">30.0 cm</span>
+    <span id="trialImageDist">60.0 cm</span>
+    <span id="trialMagnification">-2.00</span>
+    <span id="trialImageType">Real / Inverted</span>
+  </div>
+
+  <div class="lab-container">
+    
+    <!-- Title Bar -->
+    <header class="lab-header">
+      <div class="lab-title-group">
+        <span class="lab-badge">PH·10</span>
+        <h1 class="lab-title">Geometric Optics — Thin Lens Lab</h1>
+      </div>
+      <div class="live-indicator">
+        <span class="glow-dot"></span>
+        LIVE CALCULATIONS
+      </div>
+    </header>
+
+    <!-- Workspace Grid -->
+    <div class="lab-workspace">
+      
+      <!-- Left Column (Visualizer & Data) -->
+      <div class="visualizer-panel">
+        
+        <!-- Canvas Visualizer Card -->
+        <div class="canvas-card">
+          <div class="card-title" style="margin-bottom: 10px;">
+            <span>Interactive Optical Bench</span>
+            <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">Drag the Object, Lens, or Focal markers on the axis</span>
+          </div>
+          <div class="canvas-container" id="canvasContainer">
+            <canvas id="opticsCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Live Data Readouts Card -->
+        <div class="data-card">
+          <div class="card-title">Dynamic Calculation Readouts</div>
+          <div class="data-grid">
+            
+            <div class="data-item">
+              <span class="data-label">Image Distance (d_i)</span>
+              <div class="data-value" id="readoutImageDist" style="color: #10b981;">0.00<span class="value-unit">cm</span></div>
+            </div>
+            
+            <div class="data-item">
+              <span class="data-label">Magnification (m)</span>
+              <div class="data-value" id="readoutMagnification" style="color: #f59e0b;">0.00</div>
+            </div>
+            
+            <div class="data-item">
+              <span class="data-label">Image Height (h_i)</span>
+              <div class="data-value" id="readoutImageHeight" style="color: #3b82f6;">0.00<span class="value-unit">cm</span></div>
+            </div>
+
+            <div class="data-item" style="grid-column: span 2;">
+              <span class="data-label">Image Properties</span>
+              <div class="data-value" id="readoutImageProperties">Real / Inverted</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column (Controls) -->
+      <div class="controls-panel">
+        
+        <!-- Lens configuration -->
+        <div class="control-section-title">Lens Parameters</div>
+        
+        <!-- Lens Type Selector -->
+        <div class="control-group">
+          <label class="control-label" for="lensTypeSelect">Lens Type</label>
+          <select class="select-input" id="lensTypeSelect">
+            <option value="convex">Convex (Converging)</option>
+            <option value="concave">Concave (Diverging)</option>
+          </select>
+        </div>
+
+        <!-- Focal Length Slider -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span class="control-label">Focal Length (f)</span>
+            <span class="control-readout" id="focalReadout">20 cm</span>
+          </div>
+          <input type="range" class="slider-input" id="focalSlider" min="5" max="50" step="1" value="20">
+        </div>
+
+        <!-- Object configuration -->
+        <div class="control-section-title">Object Parameters</div>
+
+        <!-- Object distance slider -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span class="control-label">Object Distance (d_o)</span>
+            <span class="control-readout" id="objDistReadout">30 cm</span>
+          </div>
+          <input type="range" class="slider-input" id="objDistSlider" min="5" max="100" step="1" value="30">
+        </div>
+
+        <!-- Object height slider -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span class="control-label">Object Height (h_o)</span>
+            <span class="control-readout" id="objHeightReadout">10 cm</span>
+          </div>
+          <input type="range" class="slider-input" id="objHeightSlider" min="2" max="15" step="0.5" value="10">
+        </div>
+
+        <!-- Ray toggles -->
+        <div class="control-section-title">Visualization Overlays</div>
+
+        <div class="control-group">
+          <label class="control-label" style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 0.9rem;">
+            <input type="checkbox" id="showRaysCheck" checked style="width:16px; height:16px;">
+            <span>Show Construction Rays (3-Rays)</span>
+          </label>
+        </div>
+
+        <div class="control-group" id="realRaysToggleGroup">
+          <label class="control-label" style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 0.9rem;">
+            <input type="checkbox" id="onlyRealRaysCheck" style="width:16px; height:16px;">
+            <span>Show Only Real Rays (Hide extensions)</span>
+          </label>
+        </div>
+
+        <div class="control-group">
+          <div class="helper-text">
+            💡 <strong>Interact:</strong> Click and drag the arrow object, the lens, or either focal marker ($F$) directly on the optical bench!
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="control-group" style="margin-top: 10px;">
+          <button class="btn btn-secondary" id="resetBtn" style="width: 100%;">Reset Setup</button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Theory Panel -->
+    <details class="theory-card" open>
+      <summary class="theory-summary">Theoretical Background & Sign Conventions</summary>
+      <div class="theory-content">
+        <div>
+          <h4>The Thin Lens Equation</h4>
+          <p>
+            For a thin spherical lens, the relationship between the object distance ($d_o$), the image distance ($d_i$), and the focal length ($f$) is defined by the Thin Lens Equation:
+          </p>
+          <div class="formula-box">
+            \frac{1}{f} = \frac{1}{d_o} + \frac{1}{d_i} \quad \implies \quad d_i = \frac{f \cdot d_o}{d_o - f}
+            <span class="formula-explanation">Where: distances are measured along the horizontal optical bench relative to the center of the lens.</span>
+          </div>
+        </div>
+
+        <div>
+          <h4>Magnification Formula</h4>
+          <p>
+            Magnification ($m$) is the ratio of the image height ($h_i$) to the object height ($h_o$). It is calculated using the relative distances:
+          </p>
+          <div class="formula-box">
+            m = \frac{h_i}{h_o} = -\frac{d_i}{d_o}
+            <span class="formula-explanation">A positive magnification ($m > 0$) means the image is upright; a negative magnification ($m < 0$) indicates the image is inverted.</span>
+          </div>
+        </div>
+
+        <div>
+          <h4>Standard Cartesian Sign Conventions</h4>
+          <ul>
+            <li><strong>Focal Length ($f$):</strong> Positive ($f > 0$) for Convex (converging) lenses; negative ($f < 0$) for Concave (diverging) lenses.</li>
+            <li><strong>Object Distance ($d_o$):</strong> Positive ($d_o > 0$) for real objects placed to the left of the lens.</li>
+            <li><strong>Image Distance ($d_i$):</strong>
+              <ul>
+                <li>Positive ($d_i > 0$): Image is formed on the opposite side of incoming light (right). It is a **Real Image** (can be projected on a screen) and is **Inverted**.</li>
+                <li>Negative ($d_i < 0$): Image is formed on the same side as the object (left). It is a **Virtual Image** (cannot be projected, only viewed through the lens) and is **Upright**.</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Principal Ray Construction Steps</h4>
+          <p>
+            To locate the image tip visually, three construction rays are traced from the object's tip:
+          </p>
+          <ol>
+            <li><strong>Central Ray (straight ray):</strong> Passes through the center of the lens undeviated.</li>
+            <li><strong>Parallel Ray:</strong> Travels parallel to the optical axis, refracts at the lens, and passes through the far focus (for convex lens) or diverges from the near focus (for concave lens).</li>
+            <li><strong>Focal Ray:</strong> Passes through the near focus (or is directed towards the far focus for concave), then refracts and travels parallel to the axis.</li>
+          </ol>
+        </div>
+      </div>
+    </details>
+
+  </div>
+
+  <script>
+    // --- UI Selectors ---
+    const canvas = document.getElementById('opticsCanvas');
+    const ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvasContainer');
+
+    const lensTypeSelect = document.getElementById('lensTypeSelect');
+    const focalSlider = document.getElementById('focalSlider');
+    const focalReadout = document.getElementById('focalReadout');
+    const objDistSlider = document.getElementById('objDistSlider');
+    const objDistReadout = document.getElementById('objDistReadout');
+    const objHeightSlider = document.getElementById('objHeightSlider');
+    const objHeightReadout = document.getElementById('objHeightReadout');
+
+    const showRaysCheck = document.getElementById('showRaysCheck');
+    const onlyRealRaysCheck = document.getElementById('onlyRealRaysCheck');
+    const realRaysToggleGroup = document.getElementById('realRaysToggleGroup');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Readout fields
+    const readoutImageDist = document.getElementById('readoutImageDist');
+    const readoutMagnification = document.getElementById('readoutMagnification');
+    const readoutImageHeight = document.getElementById('readoutImageHeight');
+    const readoutImageProperties = document.getElementById('readoutImageProperties');
+
+    // Hidden dashboard elements
+    const trialLensType = document.getElementById('trialLensType');
+    const trialFocalLength = document.getElementById('trialFocalLength');
+    const trialObjectDist = document.getElementById('trialObjectDist');
+    const trialImageDist = document.getElementById('trialImageDist');
+    const trialMagnification = document.getElementById('trialMagnification');
+    const trialImageType = document.getElementById('trialImageType');
+
+    // --- Optical Constants & Scale ---
+    const SCALE = 4; // 4 pixels = 1 cm
+    const Y_AXIS = 200; // Vertical center representing optical axis
+
+    // --- Interactive State ---
+    let lensX = 300;     // Screen position of the thin lens (px)
+    let objectDo = 30;   // Object distance from lens (cm)
+    let objectHo = 10;   // Object height (cm)
+    let focalLength = 20;// Focal length (cm, positive for convex, negative for concave)
+    let isConvex = true; // Convex lens state
+
+    let draggedElement = null; // 'object', 'lens', 'f1', 'f2'
+
+    // --- Resize handler ---
+    function resizeCanvas() {
+      const rect = canvasContainer.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      draw();
+    }
+
+    // --- Thin Lens Formula Calculator ---
+    function updateOptics() {
+      const f = isConvex ? focalLength : -focalLength;
+      const doVal = objectDo;
+      
+      let diVal = 0;
+      let m = 0;
+      let hiVal = 0;
+      let isAtInfinity = false;
+      let propertiesText = '';
+      
+      // Calculate image distance: di = (f * do) / (do - f)
+      if (Math.abs(doVal - f) < 0.2) {
+        isAtInfinity = true;
+        diVal = Infinity;
+        m = Infinity;
+        hiVal = Infinity;
+        propertiesText = 'No Image (Parallel Rays / At Focus)';
+      } else {
+        diVal = (f * doVal) / (doVal - f);
+        m = -diVal / doVal;
+        hiVal = m * objectHo;
+        
+        const isReal = diVal > 0;
+        const isUpright = m > 0;
+        
+        propertiesText = `${isReal ? 'Real' : 'Virtual'} / ${isUpright ? 'Upright' : 'Inverted'}`;
+      }
+
+      // Update UI readouts
+      if (isAtInfinity) {
+        readoutImageDist.innerHTML = `Infinity`;
+        readoutMagnification.textContent = `N/A`;
+        readoutImageHeight.innerHTML = `N/A`;
+        readoutImageProperties.textContent = propertiesText;
+      } else {
+        readoutImageDist.innerHTML = `${diVal.toFixed(2)}<span class="value-unit">cm</span>`;
+        readoutMagnification.textContent = m.toFixed(2);
+        readoutImageHeight.innerHTML = `${Math.abs(hiVal).toFixed(2)}<span class="value-unit">cm</span>`;
+        readoutImageProperties.textContent = propertiesText;
+      }
+
+      // Update hidden elements for trial logging
+      trialLensType.textContent = isConvex ? 'Convex' : 'Concave';
+      trialFocalLength.textContent = `${f.toFixed(1)} cm`;
+      trialObjectDist.textContent = `${doVal.toFixed(1)} cm`;
+      trialImageDist.textContent = isAtInfinity ? 'Infinity' : `${diVal.toFixed(1)} cm`;
+      trialMagnification.textContent = isAtInfinity ? 'N/A' : m.toFixed(2);
+      trialImageType.textContent = propertiesText;
+      
+      // Adjust visibility of 'only real rays' toggle (relevant for virtual images)
+      if (!isConvex || diVal < 0) {
+        realRaysToggleGroup.style.display = 'block';
+      } else {
+        realRaysToggleGroup.style.display = 'none';
+      }
+    }
+
+    // --- Vector / Line Drawing Helpers ---
+    function drawLine(x1, y1, x2, y2, color, width, isDashed = false) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      if (isDashed) {
+        ctx.setLineDash([5, 5]);
+      } else {
+        ctx.setLineDash([]);
+      }
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]); // reset
+    }
+
+    function drawArrow(xStart, yStart, xEnd, yEnd, color, label, isDashed = false) {
+      const dx = xEnd - xStart;
+      const dy = yEnd - yStart;
+      const angle = Math.atan2(dy, dx);
+      const headlen = 8;
+      
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      
+      ctx.beginPath();
+      if (isDashed) {
+        ctx.setLineDash([4, 4]);
+      } else {
+        ctx.setLineDash([]);
+      }
+      ctx.moveTo(xStart, yStart);
+      ctx.lineTo(xEnd, yEnd);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Arrowhead
+      ctx.beginPath();
+      ctx.moveTo(xEnd, yEnd);
+      ctx.lineTo(xEnd - headlen * Math.cos(angle - Math.PI / 6), yEnd - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(xEnd - headlen * Math.cos(angle + Math.PI / 6), yEnd - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      // Label text
+      if (label) {
+        ctx.font = '10px IBM Plex Mono';
+        ctx.fillStyle = '#fbFAF5';
+        ctx.fillText(label, xEnd - ctx.measureText(label).width / 2, yEnd + (dy > 0 ? 15 : -8));
+      }
+    }
+
+    // --- Main Rendering Screen Draw ---
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const width = canvas.width / window.devicePixelRatio;
+      const height = canvas.height / window.devicePixelRatio;
+      
+      // 1. Draw Optical Axis Bench
+      drawLine(0, Y_AXIS, width, Y_AXIS, '#4b5563', 1.5);
+      
+      // Tick marks along optical axis
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.font = '7px IBM Plex Mono';
+      for (let x = 0; x < width; x += 20) {
+        ctx.fillRect(x, Y_AXIS - 3, 1, 6);
+      }
+
+      // 2. Draw Lens
+      const lensHeight = 120;
+      ctx.save();
+      ctx.shadowColor = 'rgba(59, 130, 246, 0.6)';
+      ctx.shadowBlur = 8;
+      
+      // Lens main body line
+      drawLine(lensX, Y_AXIS - lensHeight, lensX, Y_AXIS + lensHeight, '#3b82f6', 3.5);
+      ctx.restore();
+
+      // Draw arrow tips on lens according to Converging/Diverging type
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      if (isConvex) {
+        // Converging: Arrows point outwards
+        // Top tip
+        ctx.moveTo(lensX - 8, Y_AXIS - lensHeight + 8);
+        ctx.lineTo(lensX, Y_AXIS - lensHeight);
+        ctx.lineTo(lensX + 8, Y_AXIS - lensHeight + 8);
+        // Bottom tip
+        ctx.moveTo(lensX - 8, Y_AXIS + lensHeight - 8);
+        ctx.lineTo(lensX, Y_AXIS + lensHeight);
+        ctx.lineTo(lensX + 8, Y_AXIS + lensHeight - 8);
+      } else {
+        // Diverging: Arrows point inwards
+        // Top tip
+        ctx.moveTo(lensX - 8, Y_AXIS - lensHeight);
+        ctx.lineTo(lensX, Y_AXIS - lensHeight + 8);
+        ctx.lineTo(lensX + 8, Y_AXIS - lensHeight);
+        // Bottom tip
+        ctx.moveTo(lensX - 8, Y_AXIS + lensHeight);
+        ctx.lineTo(lensX, Y_AXIS + lensHeight - 8);
+        ctx.lineTo(lensX + 8, Y_AXIS + lensHeight);
+      }
+      ctx.stroke();
+
+      // Lens center label
+      ctx.fillStyle = '#8e9bb8';
+      ctx.font = 'bold 9px Space Grotesk';
+      ctx.fillText('LENS', lensX - 11, Y_AXIS + lensHeight + 14);
+
+      // 3. Focal Points (F and 2F)
+      const fPx = focalLength * SCALE;
+      const F1x = lensX - fPx;
+      const F2x = lensX + fPx;
+      const F2x_2 = lensX - 2 * fPx;
+      const F2x_2r = lensX + 2 * fPx;
+
+      // Draw focal points as small glowing handle indicators
+      function drawFocalPoint(x, label) {
+        ctx.fillStyle = '#fbbf24'; // Amber
+        ctx.beginPath();
+        ctx.arc(x, Y_AXIS, 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.font = 'bold 9px IBM Plex Mono';
+        ctx.fillStyle = '#8e9bb8';
+        ctx.fillText(label, x - 5, Y_AXIS - 8);
+      }
+
+      drawFocalPoint(F1x, 'F');
+      drawFocalPoint(F2x, 'F');
+      drawFocalPoint(F2x_2, '2F');
+      drawFocalPoint(F2x_2r, '2F');
+
+      // 4. Draw Object Arrow (Red)
+      const objX = lensX - objectDo * SCALE;
+      const objY = Y_AXIS - objectHo * SCALE;
+      drawArrow(objX, Y_AXIS, objX, objY, '#ef4444', 'Object');
+
+      // 5. Image position calculations
+      const f = isConvex ? focalLength : -focalLength;
+      const isAtInfinity = Math.abs(objectDo - f) < 0.2;
+      
+      let di = 0;
+      let m = 0;
+      let hi = 0;
+      let imgX = 0;
+      let imgY = 0;
+      let isReal = true;
+      
+      if (!isAtInfinity) {
+        di = (f * objectDo) / (objectDo - f);
+        m = -di / objectDo;
+        hi = m * objectHo;
+        imgX = lensX + di * SCALE;
+        imgY = Y_AXIS - hi * SCALE;
+        isReal = di > 0;
+
+        // Draw Image Arrow (Green: solid if real, dashed outline if virtual)
+        drawArrow(imgX, Y_AXIS, imgX, imgY, '#10b981', 'Image', !isReal);
+      }
+
+      // 6. Draw Construction Rays (3-Ray Tracing)
+      if (showRaysCheck.checked) {
+        const onlyReal = onlyRealRaysCheck.checked;
+        const oTip = { x: objX, y: objY };
+        const iTip = isAtInfinity ? null : { x: imgX, y: imgY };
+        
+        // Ray 1: Center Ray (Orange)
+        // Passes straight from object tip through optical center of lens
+        const r1Color = '#f59e0b';
+        // Direction vector from object tip to center
+        const dx = lensX - oTip.x;
+        const dy = Y_AXIS - oTip.y;
+        const len = Math.sqrt(dx*dx + dy*dy);
+        const ux = dx/len;
+        const uy = dy/len;
+        
+        // Starts at object tip
+        drawLine(oTip.x, oTip.y, lensX, Y_AXIS, r1Color, 1.5);
+        
+        // Continues straight to the right side of the lens
+        const exitLen = width - lensX;
+        const r1EndX = lensX + ux * exitLen;
+        const r1EndY = Y_AXIS + uy * exitLen;
+        drawLine(lensX, Y_AXIS, r1EndX, r1EndY, r1Color, 1.5);
+        
+        if (!isReal && iTip && !onlyReal) {
+          // Virtual backward trace
+          drawLine(lensX, Y_AXIS, iTip.x, iTip.y, r1Color, 1.2, true);
+        }
+
+        // Ray 2: Parallel -> Focus (Purple)
+        // Travels parallel to lens, then refracts through focus
+        const r2Color = '#c084fc';
+        drawLine(oTip.x, oTip.y, lensX, oTip.y, r2Color, 1.5); // horizontal segment
+        
+        if (isAtInfinity) {
+          // At focus, parallel exit rays
+          if (isConvex) {
+            drawLine(lensX, oTip.y, F2x, Y_AXIS, r2Color, 1.5);
+            // continue parallel to central ray
+            const extX = width;
+            const extY = Y_AXIS + (oTip.y - Y_AXIS);
+            drawLine(F2x, Y_AXIS, extX, extY, r2Color, 1.5);
+          } else {
+            // diverging
+            const divSlopeX = lensX - F1x;
+            const divSlopeY = oTip.y - Y_AXIS;
+            const lenDiv = Math.sqrt(divSlopeX*divSlopeX + divSlopeY*divSlopeY);
+            const dxDiv = divSlopeX/lenDiv;
+            const dyDiv = divSlopeY/lenDiv;
+            drawLine(lensX, oTip.y, lensX + dxDiv*300, oTip.y + dyDiv*300, r2Color, 1.5);
+          }
+        } else if (isConvex) {
+          // Convex lens Parallel ray refracts through F2 (far focus)
+          drawLine(lensX, oTip.y, F2x, Y_AXIS, r2Color, 1.5);
+          
+          // continues through image tip
+          const dirX = iTip.x - F2x;
+          const dirY = iTip.y - Y_AXIS;
+          const dLen = Math.sqrt(dirX*dirX + dirY*dirY);
+          const ux2 = dirX/dLen;
+          const uy2 = dirY/dLen;
+          drawLine(F2x, Y_AXIS, F2x + ux2*width, Y_AXIS + uy2*width, r2Color, 1.5);
+          
+          if (!isReal && !onlyReal) {
+            // back extension to virtual image tip
+            drawLine(lensX, oTip.y, iTip.x, iTip.y, r2Color, 1.2, true);
+          }
+        } else {
+          // Concave lens: Parallel ray refracts as if originating from near focus F1 (left side)
+          const dirX = lensX - F1x;
+          const dirY = oTip.y - Y_AXIS;
+          const dLen = Math.sqrt(dirX*dirX + dirY*dirY);
+          const ux2 = dirX/dLen;
+          const uy2 = dirY/dLen;
+          
+          // Real diverging ray exiting lens
+          drawLine(lensX, oTip.y, lensX + ux2*width, oTip.y + uy2*width, r2Color, 1.5);
+          
+          if (!onlyReal) {
+            // Virtual extension backwards to near focus F1 (passing through virtual image tip)
+            drawLine(lensX, oTip.y, F1x, Y_AXIS, r2Color, 1.2, true);
+          }
+        }
+
+        // Ray 3: Near Focus -> Parallel (Teal/Cyan)
+        const r3Color = '#2dd4bf';
+        if (isAtInfinity) {
+          // Parallel exit
+          if (isConvex) {
+            // goes through F1
+            const dirX = lensX - F1x;
+            const dirY = Y_AXIS - oTip.y; // symmetric
+            // let's just draw some reasonable ray
+            drawLine(oTip.x, oTip.y, lensX, Y_AXIS + objectHo*SCALE, r3Color, 1.5);
+            drawLine(lensX, Y_AXIS + objectHo*SCALE, width, Y_AXIS + objectHo*SCALE, r3Color, 1.5);
+          }
+        } else if (isConvex) {
+          // Convex lens Focal ray passes through F1 (left focus) to lens, then exits parallel
+          // Lens intersection Y: Y_AXIS - hi (by thin lens geometry)
+          const lensHitY = Y_AXIS - hi * SCALE;
+          
+          // Draw incident ray from object tip, through F1, to lens plane
+          drawLine(oTip.x, oTip.y, lensX, lensHitY, r3Color, 1.5);
+          
+          // Draw refracted parallel ray on the right
+          drawLine(lensX, lensHitY, width, lensHitY, r3Color, 1.5);
+          
+          if (!isReal && !onlyReal) {
+            // Virtual backward extension parallel to the axis
+            drawLine(lensX, lensHitY, iTip.x, iTip.y, r3Color, 1.2, true);
+          }
+        } else {
+          // Concave lens Focal ray is directed towards F2 (right focus), refracts parallel
+          const lensHitY = Y_AXIS - hi * SCALE; // parallel output height
+          
+          // Draw incident ray pointing towards far focus F2
+          drawLine(oTip.x, oTip.y, lensX, lensHitY, r3Color, 1.5);
+          
+          // Draw refracted parallel ray
+          drawLine(lensX, lensHitY, width, lensHitY, r3Color, 1.5);
+          
+          if (!onlyReal) {
+            // virtual extension backwards to virtual image tip
+            drawLine(lensX, lensHitY, iTip.x, iTip.y, r3Color, 1.2, true);
+            // helper virtual line forward towards focus F2
+            drawLine(lensX, lensHitY, F2x, Y_AXIS, '#4b5563', 0.8, true);
+          }
+        }
+      }
+    }
+
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      const mouse = getMousePos(e);
+      const width = canvas.width / window.devicePixelRatio;
+      
+      const objX = lensX - objectDo * SCALE;
+      const objTipY = Y_AXIS - objectHo * SCALE;
+      
+      // A. Check if clicking object arrow
+      const clickOnObj = Math.abs(mouse.x - objX) < 18 && mouse.y <= Y_AXIS + 10 && mouse.y >= Y_AXIS - objectHo * SCALE - 15;
+      if (clickOnObj) {
+        draggedElement = 'object';
+        return;
+      }
+      
+      // B. Check if clicking focal length markers F (on axis)
+      const fPx = focalLength * SCALE;
+      const F1x = lensX - fPx;
+      const F2x = lensX + fPx;
+      
+      if (Math.abs(mouse.x - F1x) < 15 && Math.abs(mouse.y - Y_AXIS) < 18) {
+        draggedElement = 'f1';
+        return;
+      }
+      if (Math.abs(mouse.x - F2x) < 15 && Math.abs(mouse.y - Y_AXIS) < 18) {
+        draggedElement = 'f2';
+        return;
+      }
+
+      // C. Check if clicking lens center axis (drag lens position)
+      if (Math.abs(mouse.x - lensX) < 18 && Math.abs(mouse.y - Y_AXIS) < 120) {
+        draggedElement = 'lens';
+        return;
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      const mouse = getMousePos(e);
+      const width = canvas.width / window.devicePixelRatio;
+
+      // Update Cursor style on hover
+      const objX = lensX - objectDo * SCALE;
+      const fPx = focalLength * SCALE;
+      const F1x = lensX - fPx;
+      const F2x = lensX + fPx;
+      
+      const overObj = Math.abs(mouse.x - objX) < 18 && mouse.y <= Y_AXIS + 10 && mouse.y >= Y_AXIS - objectHo * SCALE - 15;
+      const overF1 = Math.abs(mouse.x - F1x) < 15 && Math.abs(mouse.y - Y_AXIS) < 18;
+      const overF2 = Math.abs(mouse.x - F2x) < 15 && Math.abs(mouse.y - Y_AXIS) < 18;
+      const overLens = Math.abs(mouse.x - lensX) < 18 && Math.abs(mouse.y - Y_AXIS) < 120;
+
+      if (overObj || overF1 || overF2) {
+        canvas.style.cursor = 'grab';
+      } else if (overLens) {
+        canvas.style.cursor = 'ew-resize';
+      } else {
+        canvas.style.cursor = 'default';
+      }
+
+      // Drag actions
+      if (draggedElement === 'object') {
+        // Drag object position horizontally (always keeps object to the left of the lens)
+        const targetX = Math.min(lensX - 10, Math.max(10, mouse.x));
+        objectDo = (lensX - targetX) / SCALE;
+        
+        // update slider
+        objDistSlider.value = Math.round(objectDo);
+        objDistReadout.textContent = `${Math.round(objectDo)} cm`;
+        
+        updateOptics();
+        draw();
+      } 
+      else if (draggedElement === 'lens') {
+        // Drag lens center position horizontally
+        const oldObjX = lensX - objectDo * SCALE;
+        
+        lensX = Math.max(100, Math.min(width - 100, mouse.x));
+        
+        // Recalculate objectDo based on object's old absolute position
+        objectDo = Math.max(5, (lensX - oldObjX) / SCALE);
+        objDistSlider.value = Math.round(objectDo);
+        objDistReadout.textContent = `${Math.round(objectDo)} cm`;
+        
+        updateOptics();
+        draw();
+      } 
+      else if (draggedElement === 'f1') {
+        // Drag left focal marker to adjust focal length
+        const targetF = (lensX - mouse.x) / SCALE;
+        focalLength = Math.max(5, Math.min(50, Math.round(targetF)));
+        
+        focalSlider.value = focalLength;
+        focalReadout.textContent = `${focalLength} cm`;
+        
+        updateOptics();
+        draw();
+      } 
+      else if (draggedElement === 'f2') {
+        // Drag right focal marker to adjust focal length
+        const targetF = (mouse.x - lensX) / SCALE;
+        focalLength = Math.max(5, Math.min(50, Math.round(targetF)));
+        
+        focalSlider.value = focalLength;
+        focalReadout.textContent = `${focalLength} cm`;
+        
+        updateOptics();
+        draw();
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      draggedElement = null;
+    });
+
+    // --- Control Events ---
+    lensTypeSelect.addEventListener('change', () => {
+      isConvex = lensTypeSelect.value === 'convex';
+      updateOptics();
+      draw();
+    });
+
+    focalSlider.addEventListener('input', () => {
+      focalLength = parseInt(focalSlider.value);
+      focalReadout.textContent = `${focalLength} cm`;
+      updateOptics();
+      draw();
+    });
+
+    objDistSlider.addEventListener('input', () => {
+      objectDo = parseInt(objDistSlider.value);
+      objDistReadout.textContent = `${objectDo} cm`;
+      updateOptics();
+      draw();
+    });
+
+    objHeightSlider.addEventListener('input', () => {
+      objectHo = parseFloat(objHeightSlider.value);
+      objHeightReadout.textContent = `${objectHo} cm`;
+      updateOptics();
+      draw();
+    });
+
+    showRaysCheck.addEventListener('change', draw);
+    onlyRealRaysCheck.addEventListener('change', draw);
+
+    // Reset setup
+    resetBtn.addEventListener('click', () => {
+      lensX = 300;
+      objectDo = 30;
+      objectHo = 10;
+      focalLength = 20;
+      isConvex = true;
+      lensTypeSelect.value = 'convex';
+      focalSlider.value = 20;
+      focalReadout.textContent = '20 cm';
+      objDistSlider.value = 30;
+      objDistReadout.textContent = '30 cm';
+      objHeightSlider.value = 10;
+      objHeightReadout.textContent = '10 cm';
+      showRaysCheck.checked = true;
+      onlyRealRaysCheck.checked = false;
+      
+      updateOptics();
+      draw();
+    });
+
+    // --- Init ---
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    updateOptics();
+    draw();
+  </script>
+</body>
+</html>
