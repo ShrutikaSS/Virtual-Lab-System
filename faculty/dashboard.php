@@ -33,7 +33,7 @@ if (isset($conn) && $conn) {
                 $broadcasts[] = $row;
             }
         }
-        $res2 = mysqli_query($conn, "SELECT id, full_name, username, email, role, created_at FROM users WHERE role = 'student' ORDER BY id DESC");
+        $res2 = mysqli_query($conn, "SELECT id, full_name, username, email, role, created_at, batch, subject, exp_completed, avg_score, hours_logged, last_active FROM users WHERE role = 'student' ORDER BY id DESC");
         if ($res2) {
             while ($row = mysqli_fetch_assoc($res2)) {
                 $students_list[] = $row;
